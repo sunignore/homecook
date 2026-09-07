@@ -72,3 +72,6 @@ memory/archive/
 # Ignore test temp directories
 tests/.temp/
 <!-- /WORKSPACE-MANAGED -->
+
+# TypeScript incremental build info (build artifact)
+*.tsbuildinfo
