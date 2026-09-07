@@ -1,0 +1,88 @@
+/* Global baseline. Every value here comes from a token — no raw colours, and no
+   raw px outside the primitive scale (docs/design.md §7 [Consistency]). */
+
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* The app is used at counter distance and never benefits from a horizontal
+     scroll (docs/design.md E1, layout decision). */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--hc-font-sans);
+  font-size: var(--hc-size-body);
+  line-height: 1.6;
+  /* iOS home-screen install: keep content clear of the notch and home bar. */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  margin: 0;
+}
+
+h1 {
+  font-size: var(--hc-size-h1);
+}
+h2 {
+  font-size: var(--hc-size-h2);
+}
+
+/* Figures are compared in columns and timers count down continuously; without
+   tabular numerals the readout jitters (docs/design.md E9). */
+.numeric,
+time,
+output {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Focus is never removed — only restyled (docs/design.md §6). */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--hc-radius-sm);
+}
+
+/* Every interactive element clears the 44px minimum target (docs/design.md §6);
+   cook mode raises this to 64px in its own scope. */
+button,
+a[role='button'],
+input,
+select,
+textarea {
+  font: inherit;
+  min-height: var(--hc-target-min);
+}
+
+button {
+  cursor: pointer;
+  border-radius: var(--hc-radius-md);
+  border: 1px solid transparent;
+  padding: var(--hc-space-2) var(--hc-space-4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

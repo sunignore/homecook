@@ -1,0 +1,946 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": "accessibility-audit",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "adr:0001",
+      "type": "adr",
+      "layer": "L3"
+    },
+    {
+      "id": "adr:0002",
+      "type": "adr",
+      "layer": "L3"
+    },
+    {
+      "id": "agent-lifecycle-manager",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "api-documentation",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "architect",
+      "type": "agent",
+      "layer": "L3"
+    },
+    {
+      "id": "code-review",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "code-writer",
+      "type": "agent",
+      "layer": "L3"
+    },
+    {
+      "id": "decision-record",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "designer",
+      "type": "agent",
+      "layer": "L3"
+    },
+    {
+      "id": "documentation-writing",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "evidence-ledger",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "explain-me",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "finishing-a-development-branch",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "gateguard",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "handbook",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "handbook-sync-audit",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "i18n-audit",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "i18n-formatting",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "i18n-layout",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "i18n-locale-config",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "i18n-specialist",
+      "type": "agent",
+      "layer": "L3"
+    },
+    {
+      "id": "meeting",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "meeting-facilitation",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "output_type.approved_implementation_plan",
+      "type": "output_type",
+      "layer": "L3"
+    },
+    {
+      "id": "output_type.environment_manifest",
+      "type": "output_type",
+      "layer": "L3"
+    },
+    {
+      "id": "output_type.implementation_commit",
+      "type": "output_type",
+      "layer": "L3"
+    },
+    {
+      "id": "output_type.regression_report",
+      "type": "output_type",
+      "layer": "L3"
+    },
+    {
+      "id": "output_type.release_notes",
+      "type": "output_type",
+      "layer": "L3"
+    },
+    {
+      "id": "output_type.review_findings",
+      "type": "output_type",
+      "layer": "L3"
+    },
+    {
+      "id": "output_type.security_baseline",
+      "type": "output_type",
+      "layer": "L3"
+    },
+    {
+      "id": "output_type.technical_findings",
+      "type": "output_type",
+      "layer": "L3"
+    },
+    {
+      "id": "output_type.test_scaffold",
+      "type": "output_type",
+      "layer": "L3"
+    },
+    {
+      "id": "output_type.tooling_adjustments",
+      "type": "output_type",
+      "layer": "L3"
+    },
+    {
+      "id": "output_type.ui_specification",
+      "type": "output_type",
+      "layer": "L3"
+    },
+    {
+      "id": "platform-command-lifecycle-manager",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "platform-skill-lifecycle-manager",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "pm",
+      "type": "agent",
+      "layer": "L3"
+    },
+    {
+      "id": "procedure.co-develop.architecture-design",
+      "type": "procedure",
+      "layer": "L3"
+    },
+    {
+      "id": "procedure.co-develop.environment-bootstrap",
+      "type": "procedure",
+      "layer": "L3"
+    },
+    {
+      "id": "procedure.co-develop.feature-implementation",
+      "type": "procedure",
+      "layer": "L3"
+    },
+    {
+      "id": "procedure.co-develop.release-verification",
+      "type": "procedure",
+      "layer": "L3"
+    },
+    {
+      "id": "procedure.co-develop.technical-planning",
+      "type": "procedure",
+      "layer": "L3"
+    },
+    {
+      "id": "project-review",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "refactoring",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "research-analysis",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "script-lifecycle-manager",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "security-monitor",
+      "type": "agent",
+      "layer": "L3"
+    },
+    {
+      "id": "security-scan",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "skill-lifecycle-manager",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "source-command-commit-push-pr",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "stack-setup",
+      "type": "agent",
+      "layer": "L3"
+    },
+    {
+      "id": "standup-synthesizer",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "swe-solve",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "sync",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "team-builder",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "test-driven-development",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "test-runner",
+      "type": "agent",
+      "layer": "L3"
+    },
+    {
+      "id": "token-usage-lint",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "translate",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "ui-ux-design-intelligence",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "update-bun-packages",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "validate-docs-links",
+      "type": "skill",
+      "layer": "L3"
+    },
+    {
+      "id": "zod-contract-gate",
+      "type": "skill",
+      "layer": "L3"
+    }
+  ],
+  "edges": [
+    {
+      "type": "composes_with",
+      "from": "agent-lifecycle-manager",
+      "to": "skill-lifecycle-manager",
+      "source": "relates_to",
+      "symmetric": true,
+      "provenance": {
+        "file": "skills/agent-lifecycle-manager/SKILL.md",
+        "field": "relates_to",
+        "index": 0
+      }
+    },
+    {
+      "type": "used_by",
+      "from": "code-review",
+      "to": "code-writer",
+      "source": "required_skills",
+      "provenance": {
+        "file": "agents/code-writer.md",
+        "field": "required_skills",
+        "index": 0
+      }
+    },
+    {
+      "type": "produces",
+      "from": "code-review",
+      "to": "output_type.review_findings",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "produces",
+      "from": "code-review",
+      "to": "output_type.security_baseline",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "composes_with",
+      "from": "code-review",
+      "to": "refactoring",
+      "source": "relates_to",
+      "symmetric": true,
+      "provenance": {
+        "file": "skills/code-review/SKILL.md",
+        "field": "relates_to",
+        "index": 0
+      }
+    },
+    {
+      "type": "references",
+      "from": "decision-record",
+      "to": "evidence-ledger",
+      "source": "prose"
+    },
+    {
+      "type": "references",
+      "from": "designer",
+      "to": "code-review",
+      "source": "prose"
+    },
+    {
+      "type": "references",
+      "from": "designer",
+      "to": "refactoring",
+      "source": "prose"
+    },
+    {
+      "type": "references",
+      "from": "designer",
+      "to": "swe-solve",
+      "source": "prose"
+    },
+    {
+      "type": "references",
+      "from": "designer",
+      "to": "test-driven-development",
+      "source": "prose"
+    },
+    {
+      "type": "produces",
+      "from": "documentation-writing",
+      "to": "output_type.release_notes",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "produces",
+      "from": "documentation-writing",
+      "to": "output_type.ui_specification",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "composes_with",
+      "from": "documentation-writing",
+      "to": "team-builder",
+      "source": "relates_to",
+      "symmetric": true,
+      "provenance": {
+        "file": "skills/documentation-writing/SKILL.md",
+        "field": "relates_to",
+        "index": 0
+      }
+    },
+    {
+      "type": "references",
+      "from": "evidence-ledger",
+      "to": "decision-record",
+      "source": "prose"
+    },
+    {
+      "type": "references",
+      "from": "handbook-sync-audit",
+      "to": "handbook",
+      "source": "prose"
+    },
+    {
+      "type": "references",
+      "from": "handbook-sync-audit",
+      "to": "project-review",
+      "source": "prose"
+    },
+    {
+      "type": "references",
+      "from": "handbook-sync-audit",
+      "to": "validate-docs-links",
+      "source": "prose"
+    },
+    {
+      "type": "references",
+      "from": "i18n-audit",
+      "to": "i18n-formatting",
+      "source": "prose"
+    },
+    {
+      "type": "references",
+      "from": "i18n-audit",
+      "to": "i18n-layout",
+      "source": "prose"
+    },
+    {
+      "type": "references",
+      "from": "i18n-audit",
+      "to": "i18n-locale-config",
+      "source": "prose"
+    },
+    {
+      "type": "used_by",
+      "from": "i18n-audit",
+      "to": "i18n-specialist",
+      "source": "required_skills",
+      "provenance": {
+        "file": "agents/i18n-specialist.md",
+        "field": "required_skills",
+        "index": 3
+      }
+    },
+    {
+      "type": "references",
+      "from": "i18n-formatting",
+      "to": "i18n-layout",
+      "source": "prose"
+    },
+    {
+      "type": "references",
+      "from": "i18n-formatting",
+      "to": "i18n-locale-config",
+      "source": "prose"
+    },
+    {
+      "type": "used_by",
+      "from": "i18n-formatting",
+      "to": "i18n-specialist",
+      "source": "required_skills",
+      "provenance": {
+        "file": "agents/i18n-specialist.md",
+        "field": "required_skills",
+        "index": 1
+      }
+    },
+    {
+      "type": "references",
+      "from": "i18n-formatting",
+      "to": "translate",
+      "source": "prose"
+    },
+    {
+      "type": "references",
+      "from": "i18n-layout",
+      "to": "i18n-formatting",
+      "source": "prose"
+    },
+    {
+      "type": "references",
+      "from": "i18n-layout",
+      "to": "i18n-locale-config",
+      "source": "prose"
+    },
+    {
+      "type": "used_by",
+      "from": "i18n-layout",
+      "to": "i18n-specialist",
+      "source": "required_skills",
+      "provenance": {
+        "file": "agents/i18n-specialist.md",
+        "field": "required_skills",
+        "index": 2
+      }
+    },
+    {
+      "type": "references",
+      "from": "i18n-layout",
+      "to": "translate",
+      "source": "prose"
+    },
+    {
+      "type": "references",
+      "from": "i18n-locale-config",
+      "to": "i18n-formatting",
+      "source": "prose"
+    },
+    {
+      "type": "references",
+      "from": "i18n-locale-config",
+      "to": "i18n-layout",
+      "source": "prose"
+    },
+    {
+      "type": "used_by",
+      "from": "i18n-locale-config",
+      "to": "i18n-specialist",
+      "source": "required_skills",
+      "provenance": {
+        "file": "agents/i18n-specialist.md",
+        "field": "required_skills",
+        "index": 0
+      }
+    },
+    {
+      "type": "references",
+      "from": "i18n-locale-config",
+      "to": "translate",
+      "source": "prose"
+    },
+    {
+      "type": "references",
+      "from": "i18n-specialist",
+      "to": "i18n-audit",
+      "source": "prose"
+    },
+    {
+      "type": "references",
+      "from": "i18n-specialist",
+      "to": "i18n-formatting",
+      "source": "prose"
+    },
+    {
+      "type": "references",
+      "from": "i18n-specialist",
+      "to": "i18n-layout",
+      "source": "prose"
+    },
+    {
+      "type": "references",
+      "from": "i18n-specialist",
+      "to": "i18n-locale-config",
+      "source": "prose"
+    },
+    {
+      "type": "references",
+      "from": "i18n-specialist",
+      "to": "translate",
+      "source": "prose"
+    },
+    {
+      "type": "references",
+      "from": "meeting",
+      "to": "meeting-facilitation",
+      "source": "prose"
+    },
+    {
+      "type": "references",
+      "from": "meeting-facilitation",
+      "to": "project-review",
+      "source": "prose"
+    },
+    {
+      "type": "references",
+      "from": "meeting-facilitation",
+      "to": "team-builder",
+      "source": "prose"
+    },
+    {
+      "type": "step_by_agent",
+      "from": "procedure.co-develop.architecture-design",
+      "to": "architect",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "step_uses_skill",
+      "from": "procedure.co-develop.architecture-design",
+      "to": "code-review",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "produces",
+      "from": "procedure.co-develop.architecture-design",
+      "to": "output_type.approved_implementation_plan",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "enables",
+      "from": "procedure.co-develop.architecture-design",
+      "to": "procedure.co-develop.feature-implementation",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "follows",
+      "from": "procedure.co-develop.architecture-design",
+      "to": "procedure.co-develop.technical-planning",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "step_uses_skill",
+      "from": "procedure.co-develop.environment-bootstrap",
+      "to": "code-review",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "produces",
+      "from": "procedure.co-develop.environment-bootstrap",
+      "to": "output_type.environment_manifest",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "enables",
+      "from": "procedure.co-develop.environment-bootstrap",
+      "to": "procedure.co-develop.technical-planning",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "step_by_agent",
+      "from": "procedure.co-develop.environment-bootstrap",
+      "to": "security-monitor",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "step_by_agent",
+      "from": "procedure.co-develop.environment-bootstrap",
+      "to": "stack-setup",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "step_uses_skill",
+      "from": "procedure.co-develop.environment-bootstrap",
+      "to": "test-driven-development",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "step_by_agent",
+      "from": "procedure.co-develop.feature-implementation",
+      "to": "architect",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "step_uses_skill",
+      "from": "procedure.co-develop.feature-implementation",
+      "to": "code-review",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "step_by_agent",
+      "from": "procedure.co-develop.feature-implementation",
+      "to": "code-writer",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "step_by_agent",
+      "from": "procedure.co-develop.feature-implementation",
+      "to": "designer",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "step_uses_skill",
+      "from": "procedure.co-develop.feature-implementation",
+      "to": "documentation-writing",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "produces",
+      "from": "procedure.co-develop.feature-implementation",
+      "to": "output_type.implementation_commit",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "follows",
+      "from": "procedure.co-develop.feature-implementation",
+      "to": "refactoring",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "step_by_agent",
+      "from": "procedure.co-develop.feature-implementation",
+      "to": "security-monitor",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "step_uses_skill",
+      "from": "procedure.co-develop.feature-implementation",
+      "to": "test-driven-development",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "step_uses_skill",
+      "from": "procedure.co-develop.feature-implementation",
+      "to": "test-driven-development",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "step_by_agent",
+      "from": "procedure.co-develop.release-verification",
+      "to": "code-writer",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "step_uses_skill",
+      "from": "procedure.co-develop.release-verification",
+      "to": "documentation-writing",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "produces",
+      "from": "procedure.co-develop.release-verification",
+      "to": "output_type.regression_report",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "follows",
+      "from": "procedure.co-develop.release-verification",
+      "to": "procedure.co-develop.feature-implementation",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "step_uses_skill",
+      "from": "procedure.co-develop.release-verification",
+      "to": "test-driven-development",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "step_by_agent",
+      "from": "procedure.co-develop.release-verification",
+      "to": "test-runner",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "step_by_agent",
+      "from": "procedure.co-develop.technical-planning",
+      "to": "architect",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "produces",
+      "from": "procedure.co-develop.technical-planning",
+      "to": "output_type.technical_findings",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "follows",
+      "from": "procedure.co-develop.technical-planning",
+      "to": "procedure.co-develop.environment-bootstrap",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "step_uses_skill",
+      "from": "procedure.co-develop.technical-planning",
+      "to": "refactoring",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "step_uses_skill",
+      "from": "procedure.co-develop.technical-planning",
+      "to": "research-analysis",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "step_by_agent",
+      "from": "procedure.co-develop.technical-planning",
+      "to": "stack-setup",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "composes_with",
+      "from": "refactoring",
+      "to": "code-review",
+      "source": "relates_to",
+      "symmetric": true,
+      "provenance": {
+        "file": "skills/refactoring/SKILL.md",
+        "field": "relates_to",
+        "index": 0
+      }
+    },
+    {
+      "type": "used_by",
+      "from": "refactoring",
+      "to": "code-writer",
+      "source": "required_skills",
+      "provenance": {
+        "file": "agents/code-writer.md",
+        "field": "required_skills",
+        "index": 1
+      }
+    },
+    {
+      "type": "produces",
+      "from": "refactoring",
+      "to": "output_type.tooling_adjustments",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "enables",
+      "from": "research-analysis",
+      "to": "documentation-writing",
+      "source": "relates_to",
+      "provenance": {
+        "file": "skills/research-analysis/SKILL.md",
+        "field": "relates_to",
+        "index": 0
+      }
+    },
+    {
+      "type": "references",
+      "from": "security-scan",
+      "to": "update-bun-packages",
+      "source": "prose"
+    },
+    {
+      "type": "composes_with",
+      "from": "skill-lifecycle-manager",
+      "to": "script-lifecycle-manager",
+      "source": "relates_to",
+      "symmetric": true,
+      "provenance": {
+        "file": "skills/skill-lifecycle-manager/SKILL.md",
+        "field": "relates_to",
+        "index": 0
+      }
+    },
+    {
+      "type": "references",
+      "from": "team-builder",
+      "to": "agent-lifecycle-manager",
+      "source": "prose"
+    },
+    {
+      "type": "references",
+      "from": "team-builder",
+      "to": "skill-lifecycle-manager",
+      "source": "prose"
+    },
+    {
+      "type": "follows",
+      "from": "test-driven-development",
+      "to": "code-review",
+      "source": "relates_to",
+      "provenance": {
+        "file": "skills/test-driven-development/SKILL.md",
+        "field": "relates_to",
+        "index": 0
+      }
+    },
+    {
+      "type": "produces",
+      "from": "test-driven-development",
+      "to": "output_type.test_scaffold",
+      "source": "procedure_schema"
+    },
+    {
+      "type": "used_by",
+      "from": "test-driven-development",
+      "to": "test-runner",
+      "source": "required_skills",
+      "provenance": {
+        "file": "agents/test-runner.md",
+        "field": "required_skills",
+        "index": 0
+      }
+    },
+    {
+      "type": "follows",
+      "from": "token-usage-lint",
+      "to": "ui-ux-design-intelligence",
+      "source": "relates_to",
+      "provenance": {
+        "file": "skills/token-usage-lint/SKILL.md",
+        "field": "relates_to",
+        "index": 0
+      }
+    },
+    {
+      "type": "composes_with",
+      "from": "translate",
+      "to": "documentation-writing",
+      "source": "relates_to",
+      "symmetric": true,
+      "provenance": {
+        "file": "skills/translate/SKILL.md",
+        "field": "relates_to",
+        "index": 0
+      }
+    },
+    {
+      "type": "follows",
+      "from": "ui-ux-design-intelligence",
+      "to": "documentation-writing",
+      "source": "relates_to",
+      "provenance": {
+        "file": "skills/ui-ux-design-intelligence/SKILL.md",
+        "field": "relates_to",
+        "index": 0
+      }
+    }
+  ]
+}

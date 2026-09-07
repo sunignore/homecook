@@ -1,0 +1,95 @@
+/* App shell layout. Token values only (docs/design.md §7). */
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.app-main {
+  flex: 1;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--hc-space-4);
+  /* Clear the fixed tab bar. */
+  padding-bottom: var(--hc-space-16);
+}
+
+.tab-bar {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: space-around;
+  gap: var(--hc-space-1);
+  padding: var(--hc-space-2) var(--hc-space-2)
+    calc(var(--hc-space-2) + env(safe-area-inset-bottom));
+  background: var(--tab-bar-bg);
+  border-top: 1px solid var(--card-border);
+}
+
+.tab {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--hc-space-1);
+  /* 44px floor for wet, imprecise taps (docs/design.md §6, E2). */
+  min-height: var(--hc-target-min);
+  padding: var(--hc-space-1);
+  border-radius: var(--hc-radius-md);
+  color: var(--tab-inactive-fg);
+  font-size: var(--hc-size-caption);
+  text-decoration: none;
+  transition: color var(--hc-duration-fast) var(--hc-easing-out);
+}
+
+/* Active state is colour + weight, never colour alone — kitchen glare washes
+   out hue (docs/design.md §6, E3). */
+.tab.active,
+.tab[aria-current='page'] {
+  color: var(--tab-active-fg);
+  font-weight: 700;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--hc-radius-lg);
+  padding: var(--hc-space-4);
+}
+
+.muted {
+  color: var(--muted-foreground);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hc-space-4);
+}
+
+.stat-list {
+  display: flex;
+  gap: var(--hc-space-6);
+  margin: 0;
+}
+
+.stat-list div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hc-space-1);
+}
+
+.stat-list dt {
+  color: var(--muted-foreground);
+  font-size: var(--hc-size-caption);
+}
+
+.stat-list dd {
+  margin: 0;
+  font-size: var(--hc-size-lead);
+  font-weight: 700;
+}
