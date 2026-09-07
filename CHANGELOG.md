@@ -12,7 +12,16 @@ All notable changes to this project will be documented in this file.
 - **[2026-09-07]**: `app/scripts/compile-tokens.ts` — compiles `src/styles/tokens.json` (SSOT) to CSS custom properties and fails the build on any primitive → semantic → component layer violation.
 - **[2026-09-07]**: `app/src/import/parseRecipeText.ts` — paste-to-parse recipe importer covering Korean and English sources: quantity-first and quantity-last orders, fractions and mixed numbers, ranges, to-taste amounts, parenthesised notes, and step-duration extraction for the M2 timers. Unclassifiable lines are surfaced in `unparsed`, never dropped.
 
+### Added
+- **[2026-09-07]**: `app/src/import/fixtures.ts` — six paste-format fixtures covering the layouts observed on public Korean recipe pages, plus notes from that format survey. Original text; only the structure is reproduced.
+
 ### Fixed
+- **[2026-09-07]**: `app/src/import/parseRecipeText.ts` — four defects found by testing against real paste formats rather than assumed ones:
+  - **[2026-09-07]**: Ingredient name and amount are rendered in separate cells on the dominant Korean recipe layout, so a paste alternates name line / amount line. The parser assumed one line per ingredient and produced bogus ingredients literally named `700ml`. Amount-only lines now attach to the ingredient above them.
+  - **[2026-09-07]**: Bracketed section labels (`[재료]`, `[양념]`) never matched, because the heading anchor did not allow a closing bracket — so nothing below such a heading was scanned.
+  - **[2026-09-07]**: `주재료` was missing from the ingredient-heading vocabulary (`부재료` was present), silently dropping every ingredient in that section.
+  - **[2026-09-07]**: Serving counts stayed in the parsed title (`잡채 (4인분)`), duplicating a value already captured separately.
+- **[2026-09-07]**: `app/src/import/parseRecipeText.ts` — bracketed asides (e.g. a ratio hint) are no longer parsed as ingredients, substitution notes (`또는 목살`) move into the note field, promotional boilerplate is kept out of the step list, and common English count units (clove, slice, can…) are recognised.
 - **[2026-09-07]**: `.gitignore` — ignore `*.tsbuildinfo`, and untrack `app/tsconfig.tsbuildinfo`, which was committed as a build artifact in the initial import.
 - **[2026-09-07]**: `scripts/SCRIPTS.md` — `upgrade-project.ts` registry row was tagged layer `L0` while the file ships into scaffolded projects, so `verify-scripts.ts` skipped the row and then reported the copied file as unregistered, failing the audit on a fresh scaffold. Corrected to `L0+L1` to match the workspace-root registry.
 - **[2026-09-07]**: `docs/user-guide.md`, `docs/user-guide_ko.md` — dropped the `../GEMINI.md` link, which is dangling in a project scaffolded with `--platform claude`.
