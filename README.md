@@ -1,6 +1,6 @@
 ---
 sync_version: 1
-content_hash: c59ff25d76c2674526ec0707d7fb9174a7528be266e6dd2c1367996c4a2d0b63
+content_hash: 58eb1abea36b0206a3603c351d9cd733350e814d7bf11b772234667e0631bc2f
 ---
 
 # homecook
@@ -25,7 +25,7 @@ Pantry ──▶ What should I cook? ──▶ Cook mode ──▶ Cook log
 
 | Milestone | Scope | Status |
 |-----------|-------|--------|
-| **M1** | Recipe archive, paste-to-parse import, cook log, backup | 🚧 In progress |
+| **M1** | Recipe archive, paste-to-parse import, cook log, backup | 🚧 In progress — import and backup done; cook log next |
 | **M2** | Cook mode — full-screen steps, timers, Wake Lock | Planned |
 | **M3** | Pantry inventory and "what can I cook now" suggestions | Planned |
 | **M4** | Weekly meal plan → shopping list | Planned |
@@ -47,6 +47,18 @@ bun run dev      # dev server
 bun run test     # unit tests
 bun run build    # production PWA build
 ```
+
+### Deployment
+
+Deployed on Vercel from `vercel.json` at the repository root: it builds `app/`
+and serves `app/dist`, rewrites unmatched paths to `index.html` (required — the
+router uses real URLs, so `/recipes/<id>` would 404 on refresh without it), and
+keeps `sw.js` uncached so a new version is picked up.
+
+**Data does not follow the app between origins.** IndexedDB is scoped to
+scheme + host + port, so recipes entered against `localhost` do not appear on the
+deployed URL, and vice versa. Move data with a backup export/restore from
+Settings.
 
 ## Overview
 

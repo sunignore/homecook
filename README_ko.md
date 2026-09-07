@@ -1,6 +1,6 @@
 ---
 sync_version: 1
-translated_from_hash: c59ff25d76c2674526ec0707d7fb9174a7528be266e6dd2c1367996c4a2d0b63
+translated_from_hash: 58eb1abea36b0206a3603c351d9cd733350e814d7bf11b772234667e0631bc2f
 lang: ko
 lang_reason: source-material
 ---
@@ -48,6 +48,16 @@ bun run dev      # 개발 서버
 bun run test     # 단위 테스트
 bun run build    # 프로덕션 PWA 빌드
 ```
+
+### 배포
+
+레포 루트의 `vercel.json`로 Vercel에 배포합니다. `app/`을 빌드해 `app/dist`를 서빙하고,
+매칭되지 않는 경로를 `index.html`로 rewrite합니다(라우터가 실제 URL을 쓰므로 이게 없으면
+`/recipes/<id>`에서 새로고침 시 404됩니다). `sw.js`는 캐시하지 않아 새 버전이 바로 적용됩니다.
+
+**데이터는 오리진을 따라가지 않습니다.** IndexedDB는 스킴+호스트+포트 단위로 격리되므로,
+`localhost`에서 넣은 레시피는 배포된 주소에 나타나지 않으며 반대도 마찬가지입니다.
+설정 화면의 백업 내보내기/복원으로 옮기세요.
 
 ## 개요 (에이전트 팀)
 
