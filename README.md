@@ -1,6 +1,6 @@
 ---
 sync_version: 1
-content_hash: 58eb1abea36b0206a3603c351d9cd733350e814d7bf11b772234667e0631bc2f
+content_hash: 96f3f87d6ee87de1d6ebaaa9d1de31407222d80d0c2b69d48dcbd423d83191d9
 ---
 
 # homecook
@@ -50,10 +50,21 @@ bun run build    # production PWA build
 
 ### Deployment
 
-Deployed on Vercel from `vercel.json` at the repository root: it builds `app/`
-and serves `app/dist`, rewrites unmatched paths to `index.html` (required — the
-router uses real URLs, so `/recipes/<id>` would 404 on refresh without it), and
-keeps `sw.js` uncached so a new version is picked up.
+Deployed on Vercel. The app is not at the repository root, so the Vercel project
+must have:
+
+| Setting | Value |
+|---------|-------|
+| **Root Directory** | `app` |
+
+Everything else comes from [`app/vercel.json`](app/vercel.json): it serves `dist`,
+rewrites unmatched paths to `index.html` (required — the router uses real URLs, so
+`/recipes/<id>` would 404 on refresh without it), and keeps `sw.js` uncached so a
+new version is picked up.
+
+Config lives in `app/`, not the repository root, because Vercel runs the build
+*inside* the Root Directory: a root-level config with `cd app` in its build command
+fails with `cd: app: No such file or directory`.
 
 **Data does not follow the app between origins.** IndexedDB is scoped to
 scheme + host + port, so recipes entered against `localhost` do not appear on the

@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased] 2026-09-07
 
+### Fixed
+- **[2026-09-07]**: Vercel build failed with `cd: app: No such file or directory`. Vercel runs the build *inside* the project's Root Directory (`app`), so a repository-root `vercel.json` whose build command began with `cd app` was already there. Config moved to `app/vercel.json` with plain, location-independent commands (`bun run build` → `dist`); the root config is removed so there is one source of truth. Deployment setup is documented in the README: Root Directory must be `app`.
+
 ### Added
 - **[2026-09-07]**: **Backup export / restore** — the M1 completion requirement, and the app's entire durability story given there is no server copy (ADR-0001). Settings exports one `.zip` (`data.json` plus `photos/`) and restores from it. Restore validates the whole archive *before* touching anything and replaces in a single transaction, so a corrupt file or a mid-restore failure leaves the existing data intact rather than half-erased. Verified end to end in the browser: export → wipe IndexedDB completely → restore → recipes, ingredient references, the derived index and step timers all return.
 - **[2026-09-07]**: Settings shows the uncomfortable numbers on purpose: record counts, storage used, whether the browser agreed to persist the data, and how long since the last export (warning past 14 days). The last-export date lives in `localStorage`, not the database — storing it with the data would mean a restore also restored a stale "last backed up" date, at exactly the moment the number most needs to be true.
