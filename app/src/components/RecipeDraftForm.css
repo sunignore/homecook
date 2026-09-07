@@ -107,3 +107,64 @@ ol.row-list {
   height: 1.1rem;
   padding: 0;
 }
+
+.photo-preview {
+  position: relative;
+  border-radius: var(--hc-radius-lg);
+  overflow: hidden;
+  background: var(--surface-raised);
+}
+
+.photo-preview img {
+  display: block;
+  width: 100%;
+  max-height: 16rem;
+  object-fit: cover;
+}
+
+.photo-remove {
+  position: absolute;
+  top: var(--hc-space-2);
+  inset-inline-end: var(--hc-space-2);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--hc-radius-full);
+}
+
+.photo-pick {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--hc-space-2);
+  align-self: flex-start;
+  min-height: var(--hc-target-min);
+  padding: var(--hc-space-2) var(--hc-space-4);
+  border: 1px solid var(--card-border);
+  border-radius: var(--hc-radius-md);
+  color: var(--button-quiet-fg);
+  cursor: pointer;
+}
+
+.tag-list,
+.tag-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--hc-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--hc-size-caption);
+}
+
+/* Tag chips are buttons; they still need a real touch target. */
+.tag-removable {
+  min-height: var(--hc-target-min);
+  border: none;
+  cursor: pointer;
+}
+
+.tag-input {
+  flex: 1;
+  min-width: 0;
+}

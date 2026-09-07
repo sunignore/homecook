@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import RecipeDraftForm, { type DraftStep } from '../components/RecipeDraftForm';
 import { parseRecipeText } from '../import/parseRecipeText';
 import { importRecipe, type DraftIngredient } from '../import/importRecipe';
+import { replaceRecipePhoto } from '../photos/photoStore';
 
 // The correction step, not the parse step, is what makes importing beat typing:
 // the parser only has to be ~80% right if fixing the rest is fast
@@ -51,8 +52,11 @@ export default function RecipeImport() {
           submitLabel="저장"
           secondaryLabel="원문 고치기"
           onSecondary={() => setParsed(null)}
-          onSubmit={async draft => {
-            const id = await importRecipe({ ...draft, tags: [], sourceText });
+          onSubmit={async (draft, photo) => {
+            const id = await importRecipe({ ...draft, sourceText });
+            // Attached after the recipe exists, so a failed image cannot lose
+            // the recipe the user just corrected.
+            if (photo) await replaceRecipePhoto(id, photo);
             navigate(`/recipes/${id}`);
           }}
         />

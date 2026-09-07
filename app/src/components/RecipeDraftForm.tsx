@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { AlertCircle, Check, Plus, Trash2 } from 'lucide-react';
+import { AlertCircle, Camera, Check, Plus, Trash2, X } from 'lucide-react';
+import { preparePhoto } from '../photos/resizeImage';
 import { db } from '../db/db';
 import { resolveIngredients } from '../import/resolveIngredients';
 import type { DraftIngredient, RecipeDraft } from '../import/importRecipe';
@@ -20,10 +21,17 @@ export interface RecipeDraftFormProps {
   initialServings: number;
   initialRows: DraftIngredient[];
   initialSteps: DraftStep[];
+  initialTags?: string[];
+  /** Existing photo to show; the form only reports changes to it. */
+  initialPhoto?: Blob | null;
   /** Lines the parser could not classify; omitted when editing. */
   unparsed?: string[];
   submitLabel: string;
-  onSubmit: (draft: Omit<RecipeDraft, 'sourceText' | 'tags'>) => Promise<void>;
+  onSubmit: (
+    draft: Omit<RecipeDraft, 'sourceText'>,
+    /** undefined = photo untouched, null = removed, Blob = new image. */
+    photo: Blob | null | undefined,
+  ) => Promise<void>;
   secondaryLabel: string;
   onSecondary: () => void;
 }
@@ -33,6 +41,8 @@ export default function RecipeDraftForm({
   initialServings,
   initialRows,
   initialSteps,
+  initialTags = [],
+  initialPhoto = null,
   unparsed = [],
   submitLabel,
   onSubmit,
@@ -43,10 +53,51 @@ export default function RecipeDraftForm({
   const [servings, setServings] = useState(initialServings);
   const [rows, setRows] = useState<DraftIngredient[]>(initialRows);
   const [steps, setSteps] = useState<DraftStep[]>(initialSteps);
+  const [tags, setTags] = useState<string[]>(initialTags);
+  const [tagInput, setTagInput] = useState('');
+  const [photo, setPhoto] = useState<Blob | null | undefined>(undefined);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const existing = useLiveQuery(() => db.ingredients.toArray(), [], []);
+
+  // Every tag already in the archive, so the same dish category does not end up
+  // spelled three ways and split across three filters.
+  const knownTags = useLiveQuery(async () => {
+    const all = await db.recipes.toArray();
+    return [...new Set(all.flatMap(r => r.tags))].sort();
+  }, [], []);
+
+  const shownPhoto = photo === undefined ? initialPhoto : photo;
+
+  useEffect(() => {
+    if (!shownPhoto) {
+      setPhotoUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(shownPhoto);
+    setPhotoUrl(url);
+    // Revoked on replacement or unmount, or the blob URL leaks for the session.
+    return () => URL.revokeObjectURL(url);
+  }, [shownPhoto]);
+
+  function addTag(raw: string) {
+    const tag = raw.trim().replace(/^#/, '');
+    if (!tag) return;
+    setTags(prev => (prev.includes(tag) ? prev : [...prev, tag]));
+    setTagInput('');
+  }
+
+  async function handlePhotoPicked(file: File) {
+    setError(null);
+    try {
+      // Downscaled before it ever reaches the database (docs/data-model.md §1).
+      setPhoto(await preparePhoto(file));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '사진을 처리하지 못했습니다.');
+    }
+  }
 
   // Recomputed on every edit, so renaming a row onto an existing ingredient
   // clears its "new" flag immediately rather than at save time.
@@ -74,12 +125,16 @@ export default function RecipeDraftForm({
     setSaving(true);
     setError(null);
     try {
-      await onSubmit({
-        title,
-        servings,
-        ingredients: rows,
-        steps: steps.map(({ key: _key, ...s }) => s),
-      });
+      await onSubmit(
+        {
+          title,
+          servings,
+          tags,
+          ingredients: rows,
+          steps: steps.map(({ key: _key, ...s }) => s),
+        },
+        photo,
+      );
     } catch (e) {
       setError(e instanceof Error ? e.message : '저장하지 못했습니다.');
       setSaving(false);
@@ -114,6 +169,98 @@ export default function RecipeDraftForm({
           onChange={e => setServings(Number(e.target.value))}
         />
       </label>
+
+      <section className="stack" aria-labelledby="photo-heading">
+        <h2 id="photo-heading">사진</h2>
+        {photoUrl ? (
+          <div className="photo-preview">
+            <img src={photoUrl} alt={`${title || '레시피'} 사진`} />
+            <button
+              type="button"
+              className="btn-icon photo-remove"
+              onClick={() => setPhoto(null)}
+              aria-label="사진 삭제"
+            >
+              <X size={20} strokeWidth={2} aria-hidden="true" />
+            </button>
+          </div>
+        ) : (
+          <label className="btn-quiet photo-pick">
+            <Camera size={20} strokeWidth={2} aria-hidden="true" />
+            사진 추가
+            <input
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={e => {
+                const file = e.target.files?.[0];
+                e.target.value = '';
+                if (file) void handlePhotoPicked(file);
+              }}
+            />
+          </label>
+        )}
+      </section>
+
+      <section className="stack" aria-labelledby="tag-heading">
+        <h2 id="tag-heading">태그</h2>
+
+        {tags.length > 0 && (
+          <ul className="tag-list">
+            {tags.map(tag => (
+              <li key={tag}>
+                <button
+                  type="button"
+                  className="tag tag-timer tag-removable"
+                  onClick={() => setTags(prev => prev.filter(t => t !== tag))}
+                  aria-label={`${tag} 태그 삭제`}
+                >
+                  {tag}
+                  <X size={14} strokeWidth={2.5} aria-hidden="true" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <div className="actions">
+          <input
+            className="tag-input"
+            value={tagInput}
+            onChange={e => setTagInput(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                addTag(tagInput);
+              }
+            }}
+            placeholder="한식, 15분, 자취"
+            aria-label="태그 추가"
+          />
+          <button type="button" className="btn-quiet" onClick={() => addTag(tagInput)}>
+            추가
+          </button>
+        </div>
+
+        {knownTags.filter(t => !tags.includes(t)).length > 0 && (
+          <div className="tag-suggestions">
+            <span className="muted">기존 태그:</span>
+            {knownTags
+              .filter(t => !tags.includes(t))
+              .map(tag => (
+                <button
+                  key={tag}
+                  type="button"
+                  className="tag tag-known tag-removable"
+                  onClick={() => addTag(tag)}
+                >
+                  <Plus size={14} strokeWidth={2.5} aria-hidden="true" />
+                  {tag}
+                </button>
+              ))}
+          </div>
+        )}
+      </section>
 
       <section className="stack" aria-labelledby="ing-heading">
         <h2 id="ing-heading">재료 ({rows.length})</h2>

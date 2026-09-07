@@ -1,21 +1,29 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { ClipboardPaste, Search } from 'lucide-react';
 import { db } from '../db/db';
+import RecipePhoto from '../components/RecipePhoto';
 import './Recipes.css';
 
 export default function Recipes() {
   const [query, setQuery] = useState('');
+  // A tag link from a recipe filters the list; keeping it in the URL means the
+  // filtered view is shareable and survives a refresh.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTag = searchParams.get('tag');
+
   const recipes = useLiveQuery(() => db.recipes.orderBy('updatedAt').reverse().toArray());
 
   const term = query.trim().toLowerCase();
-  const shown = (recipes ?? []).filter(
-    r =>
-      !term ||
-      r.title.toLowerCase().includes(term) ||
-      r.tags.some(t => t.toLowerCase().includes(term)),
-  );
+  const shown = (recipes ?? [])
+    .filter(r => !activeTag || r.tags.includes(activeTag))
+    .filter(
+      r =>
+        !term ||
+        r.title.toLowerCase().includes(term) ||
+        r.tags.some(t => t.toLowerCase().includes(term)),
+    );
 
   return (
     <div className="stack">
@@ -26,6 +34,21 @@ export default function Recipes() {
           붙여넣기
         </Link>
       </div>
+
+      {activeTag && (
+        <p className="banner banner-ok">
+          <span>
+            <strong>{activeTag}</strong> 태그 {shown.length}개
+          </span>
+          <button
+            type="button"
+            className="btn-quiet"
+            onClick={() => setSearchParams({}, { replace: true })}
+          >
+            전체 보기
+          </button>
+        </p>
+      )}
 
       {recipes !== undefined && recipes.length > 0 && (
         <label className="search">
@@ -60,6 +83,11 @@ export default function Recipes() {
           {shown.map(recipe => (
             <li key={recipe.id}>
               <Link to={`/recipes/${recipe.id}`} className="recipe-card">
+                <RecipePhoto
+                  photoId={recipe.photoId}
+                  alt={`${recipe.title} 사진`}
+                  className="recipe-thumb"
+                />
                 <span className="recipe-title">{recipe.title}</span>
                 <span className="muted recipe-sub numeric">
                   재료 {recipe.ingredients.length} · 단계 {recipe.steps.length} · {recipe.servings}

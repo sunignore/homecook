@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
 import RecipeDraftForm, { type DraftStep } from '../components/RecipeDraftForm';
 import { updateRecipe, type DraftIngredient } from '../import/importRecipe';
+import { replaceRecipePhoto } from '../photos/photoStore';
 
 // Editing reuses the import correction form: both are the same job, and the
 // ingredient rows must go through the same resolution so a rename here can land
@@ -32,8 +33,9 @@ export default function RecipeEdit() {
     }));
 
     const steps: DraftStep[] = recipe.steps.map((s, idx) => ({ ...s, key: `s${idx}` }));
+    const photo = recipe.photoId ? ((await db.photos.get(recipe.photoId))?.blob ?? null) : null;
 
-    return { recipe, draftRows, steps };
+    return { recipe, draftRows, steps, photo };
   }, [id]);
 
   if (loaded === undefined) return <p className="muted">불러오는 중…</p>;
@@ -48,7 +50,7 @@ export default function RecipeEdit() {
     );
   }
 
-  const { recipe, draftRows, steps } = loaded;
+  const { recipe, draftRows, steps, photo } = loaded;
 
   return (
     <div className="stack">
@@ -58,11 +60,15 @@ export default function RecipeEdit() {
         initialServings={recipe.servings}
         initialRows={draftRows}
         initialSteps={steps}
+        initialTags={recipe.tags}
+        initialPhoto={photo}
         submitLabel="저장"
         secondaryLabel="취소"
         onSecondary={() => navigate(`/recipes/${recipe.id}`)}
-        onSubmit={async draft => {
-          await updateRecipe(recipe.id, { ...draft, tags: recipe.tags });
+        onSubmit={async (draft, nextPhoto) => {
+          await updateRecipe(recipe.id, draft);
+          // undefined means the photo was not touched; null clears it.
+          if (nextPhoto !== undefined) await replaceRecipePhoto(recipe.id, nextPhoto);
           navigate(`/recipes/${recipe.id}`);
         }}
       />
