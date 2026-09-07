@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { ArrowLeft, ChefHat, Pencil, Star, Timer, Trash2 } from 'lucide-react';
+import { ArrowLeft, ChefHat, Flame, Pencil, Star, Timer, Trash2 } from 'lucide-react';
 import { db } from '../db/db';
 import { addCookLog, cookLogsFor, deleteCookLog, deleteRecipeWithLogs, summarize } from '../cooklog/cookLog';
 import type { Rating } from '../db/types';
@@ -25,7 +25,10 @@ export default function RecipeDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [logging, setLogging] = useState(false);
+  // Cook mode finishes by returning here with ?logged=1, which opens the log
+  // form straight away — the tweak is remembered now or not at all.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [logging, setLogging] = useState(() => searchParams.get('logged') === '1');
   const [rating, setRating] = useState<Rating>(4);
   const [memo, setMemo] = useState('');
   const [tweaks, setTweaks] = useState('');
@@ -50,6 +53,12 @@ export default function RecipeDetail() {
     await deleteRecipeWithLogs(recipe.id);
     navigate('/recipes');
   }
+
+  useEffect(() => {
+    if (searchParams.get('logged') === '1') {
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   async function handleLogSubmit() {
     if (!recipe) return;
@@ -112,6 +121,13 @@ export default function RecipeDetail() {
       </p>
 
       <RecipePhoto photoId={recipe.photoId} alt={`${recipe.title} 사진`} className="detail-photo" />
+
+      {recipe.steps.length > 0 && (
+        <Link to={`/recipes/${recipe.id}/cook`} className="btn-primary btn-link cook-start">
+          <Flame size={24} strokeWidth={2} aria-hidden="true" />
+          요리 시작
+        </Link>
+      )}
 
       {recipe.tags.length > 0 && (
         <ul className="tag-list">
@@ -254,9 +270,6 @@ export default function RecipeDetail() {
         )}
       </section>
 
-      {/* Cook mode arrives in M2 (docs/product-brief.md §3); the step durations
-          above are already the timers it will use. */}
-      <p className="muted">조리 모드는 M2에서 추가됩니다.</p>
     </div>
   );
 }

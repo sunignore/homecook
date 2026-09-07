@@ -1,0 +1,216 @@
+/* Cook mode. A separate type scale derived from viewing distance, not the app
+   scale enlarged (docs/design.md §5, E1). Token values only. */
+
+.cook-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.cook-loading {
+  padding: var(--hc-space-6);
+  font-size: var(--hc-size-cook-body);
+}
+
+.cook-empty {
+  align-items: center;
+  justify-content: center;
+  gap: var(--hc-space-6);
+  font-size: var(--hc-size-cook-body);
+}
+
+.cook-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hc-space-3);
+  padding: var(--hc-space-3) var(--hc-space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.cook-progress {
+  font-size: var(--hc-size-cook-body);
+  font-weight: 700;
+}
+
+.cook-wake {
+  font-size: var(--hc-size-caption);
+  text-align: end;
+  flex: 1;
+}
+
+.cook-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 64px in cook mode — taps are made with wet knuckles (design.md §6, E2). */
+  min-width: var(--hc-target-cook);
+  min-height: var(--hc-target-cook);
+  background: transparent;
+  color: var(--foreground);
+}
+
+.cook-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--hc-space-8);
+  justify-content: center;
+  padding: var(--hc-space-6) var(--hc-space-4);
+  max-width: 40rem;
+  width: 100%;
+  margin-inline: auto;
+}
+
+.cook-step {
+  margin: 0;
+  font-size: var(--hc-size-cook-step);
+  line-height: 1.45;
+  /* Full foreground on background: 16:1, comfortably past the AAA 7:1 this
+     screen targets because it is read from a metre away. */
+  color: var(--foreground);
+}
+
+.cook-nav {
+  display: flex;
+  gap: var(--hc-space-3);
+  padding: var(--hc-space-4);
+  padding-bottom: calc(var(--hc-space-4) + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border);
+}
+
+.cook-btn {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: var(--hc-space-2);
+  min-height: var(--hc-target-cook);
+  padding: var(--hc-space-3) var(--hc-space-4);
+  border-radius: var(--hc-radius-lg);
+  font-size: var(--hc-size-cook-body);
+  font-weight: 700;
+}
+
+.cook-btn-primary {
+  background: var(--button-primary-bg);
+  color: var(--button-primary-fg);
+}
+
+.cook-btn-quiet {
+  background: var(--surface-raised);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+}
+
+.cook-btn:disabled {
+  opacity: 0.4;
+}
+
+/* Every running timer is visible at once — several dishes are timed together
+   and hiding one behind navigation makes this worse than a kitchen timer
+   (docs/design.md E5). */
+.timer-rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hc-space-3);
+  padding: var(--hc-space-3) var(--hc-space-4);
+  max-width: 40rem;
+  width: 100%;
+  margin-inline: auto;
+}
+
+.timer-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hc-space-2);
+  padding: var(--hc-space-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--hc-radius-lg);
+}
+
+.timer-done {
+  background: var(--green-bg);
+  color: var(--green-fg);
+  border-color: var(--green-border);
+}
+
+.timer-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hc-space-2);
+}
+
+.timer-step-link {
+  min-height: var(--hc-target-min);
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: var(--hc-size-caption);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.timer-flag {
+  font-size: var(--hc-size-caption);
+  font-weight: 700;
+}
+
+.timer-readout {
+  font-size: var(--hc-size-cook-timer);
+  font-weight: 700;
+  line-height: 1;
+  /* Proportional digits make the readout jitter as it counts (design.md E9). */
+  font-variant-numeric: tabular-nums;
+}
+
+.timer-bar {
+  height: var(--hc-space-2);
+  border-radius: var(--hc-radius-full);
+  background: var(--surface-raised);
+  overflow: hidden;
+}
+
+.timer-bar span {
+  display: block;
+  height: 100%;
+  background: var(--timer-ring);
+}
+
+.timer-actions {
+  display: flex;
+  gap: var(--hc-space-2);
+}
+
+.timer-actions .cook-btn {
+  font-size: var(--hc-size-caption);
+  min-height: var(--hc-target-cook);
+}
+
+.cook-alert {
+  margin: 0;
+  padding: var(--hc-space-3) var(--hc-space-4);
+  background: var(--green-bg);
+  color: var(--green-fg);
+  font-size: var(--hc-size-cook-body);
+  font-weight: 700;
+  text-align: center;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

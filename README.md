@@ -1,6 +1,6 @@
 ---
 sync_version: 1
-content_hash: faba8898d50fee8b8aa33ce868c331d9a6684dd170dff504c21e9c450403763d
+content_hash: 065e029af43e32c599aac88550b5a92183ce11646eba881215fc8a8ba9e53cbd
 ---
 
 # homecook
@@ -26,7 +26,7 @@ Pantry ──▶ What should I cook? ──▶ Cook mode ──▶ Cook log
 | Milestone | Scope | Status |
 |-----------|-------|--------|
 | **M1** | Recipe archive, paste-to-parse import, cook log, backup | 🚧 In progress — import and backup done; cook log next |
-| **M2** | Cook mode — full-screen steps, timers, Wake Lock | Planned |
+| **M2** | Cook mode — full-screen steps, timers, Wake Lock | ✅ Built |
 | **M3** | Pantry inventory and "what can I cook now" suggestions | Planned |
 | **M4** | Weekly meal plan → shopping list | Planned |
 
