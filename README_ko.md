@@ -1,6 +1,6 @@
 ---
 sync_version: 1
-translated_from_hash: 96f3f87d6ee87de1d6ebaaa9d1de31407222d80d0c2b69d48dcbd423d83191d9
+translated_from_hash: faba8898d50fee8b8aa33ce868c331d9a6684dd170dff504c21e9c450403763d
 lang: ko
 lang_reason: source-material
 ---
@@ -64,6 +64,13 @@ Vercel에 배포합니다. 앱이 레포 루트가 아니므로 Vercel 프로젝
 설정 파일이 레포 루트가 아니라 `app/`에 있는 이유는, Vercel이 빌드를 Root Directory **안에서**
 실행하기 때문입니다. 루트에 두고 빌드 명령에 `cd app`을 쓰면
 `cd: app: No such file or directory`로 실패합니다.
+
+**`app/`은 자기완결적이어야 합니다.** 배포 환경은 이 디렉터리만 보므로, 컴파일에 필요한 모든
+의존성이 `app/package.json`에 있어야 합니다 — 타입 패키지 포함입니다. 로컬 빌드는 통과하는데
+배포만 실패할 수 있는데, TypeScript가 상위 `node_modules`까지 올라가 타입을 찾기 때문입니다.
+그 상위 디렉터리는 전체 체크아웃에는 있고 Vercel에는 없습니다. 배포 빌드를 정직하게
+재현하려면 `app/`을 상위 `node_modules`가 없는 곳에 복사한 뒤
+`bun install && bun run build`를 실행하세요.
 
 **데이터는 오리진을 따라가지 않습니다.** IndexedDB는 스킴+호스트+포트 단위로 격리되므로,
 `localhost`에서 넣은 레시피는 배포된 주소에 나타나지 않으며 반대도 마찬가지입니다.

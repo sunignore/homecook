@@ -1,6 +1,6 @@
 ---
 sync_version: 1
-content_hash: 96f3f87d6ee87de1d6ebaaa9d1de31407222d80d0c2b69d48dcbd423d83191d9
+content_hash: faba8898d50fee8b8aa33ce868c331d9a6684dd170dff504c21e9c450403763d
 ---
 
 # homecook
@@ -65,6 +65,14 @@ new version is picked up.
 Config lives in `app/`, not the repository root, because Vercel runs the build
 *inside* the Root Directory: a root-level config with `cd app` in its build command
 fails with `cd: app: No such file or directory`.
+
+**`app/` must be self-contained.** The deployment only ever sees that directory, so
+every dependency it compiles against has to be in `app/package.json` — including
+type packages. A local build can pass while the deployment fails, because
+TypeScript walks up to the parent `node_modules` that exists in a full checkout and
+does not exist on Vercel. To reproduce a deployment build honestly, copy `app/`
+somewhere with no parent `node_modules` and run `bun install && bun run build`
+there.
 
 **Data does not follow the app between origins.** IndexedDB is scoped to
 scheme + host + port, so recipes entered against `localhost` do not appear on the

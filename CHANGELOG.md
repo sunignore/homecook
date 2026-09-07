@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased] 2026-09-07
 
 ### Fixed
+- **[2026-09-07]**: Vercel build then failed with `Cannot find module 'node:fs'`. `@types/node` was never in `app/package.json`; the local build passed only because TypeScript walked up to the parent checkout's `node_modules`, which the deployment — whose root is `app/` — does not have. Added the dependency, and verified by running install and build in a copy of `app/` with no parent `node_modules`, which is the only way to reproduce the deployment environment honestly.
 - **[2026-09-07]**: Vercel build then failed with `tsc: command not found`. The Install Command was still `echo skip` — a value from the removed root config that had been saved into the Vercel project settings, so no dependencies were installed and every build tool was missing. `app/vercel.json` now sets `installCommand` explicitly; values in `vercel.json` take precedence over dashboard settings, so the deployment no longer depends on a setting someone has to remember to clear.
 - **[2026-09-07]**: Vercel build failed with `cd: app: No such file or directory`. Vercel runs the build *inside* the project's Root Directory (`app`), so a repository-root `vercel.json` whose build command began with `cd app` was already there. Config moved to `app/vercel.json` with plain, location-independent commands (`bun run build` → `dist`); the root config is removed so there is one source of truth. Deployment setup is documented in the README: Root Directory must be `app`.
 
