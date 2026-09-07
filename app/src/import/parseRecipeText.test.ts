@@ -4,6 +4,13 @@ import {
   parseIngredientPhrase,
   parseRecipeText,
 } from './parseRecipeText';
+import {
+  ALL_FIXTURES,
+  FORMAT_A_ALTERNATING,
+  FORMAT_C_VIDEO,
+  FORMAT_D_ASIDES,
+  FORMAT_F_SUBSECTIONS,
+} from '../test/fixtures/pasteFormats';
 
 // Fixtures are shaped like real pasted sources (Korean blog posts, YouTube
 // descriptions), because the parser's only job is to beat typing on THOSE —
@@ -190,5 +197,137 @@ describe('parseRecipeText — messier sources', () => {
     expect(() => parseRecipeText('')).not.toThrow();
     expect(parseRecipeText('').ingredients).toEqual([]);
     expect(() => parseRecipeText('....\n\n\n')).not.toThrow();
+  });
+});
+
+// ── Real-world paste formats ─────────────────────────────────────────────────
+// Fixtures replicate the structure of formats observed on public Korean recipe
+// pages (see fixtures.ts for the survey notes). These are the cases that decide
+// whether pasting beats typing.
+
+describe('parseRecipeText — format A: alternating name/amount lines', () => {
+  const parsed = parseRecipeText(FORMAT_A_ALTERNATING);
+
+  it('pairs each amount line with the ingredient above it', () => {
+    expect(parsed.ingredients).toHaveLength(10);
+    expect(parsed.ingredients.slice(0, 3)).toMatchObject([
+      { name: '쌀뜨물', qty: 700, unit: 'ml' },
+      { name: '돼지고기 목살', qty: 300, unit: 'g' },
+      { name: '묵은지', qty: 3, unit: '줌' },
+    ]);
+  });
+
+  it('never emits an amount as an ingredient of its own', () => {
+    expect(parsed.ingredients.some(i => /^\d/.test(i.name))).toBe(false);
+  });
+
+  it('reads a bracketed section heading', () => {
+    // Without [재료] / [양념] being recognised, nothing below them is scanned.
+    expect(parsed.ingredients.map(i => i.name)).toContain('국간장');
+    expect(parsed.unparsed).toEqual([]);
+  });
+
+  it('handles the T abbreviation for tablespoon', () => {
+    expect(parsed.ingredients.find(i => i.name === '고춧가루')).toMatchObject({
+      qty: 0.5,
+      unit: 'T',
+    });
+  });
+});
+
+describe('parseRecipeText — format C: video description', () => {
+  const parsed = parseRecipeText(FORMAT_C_VIDEO);
+
+  it('splits a comma-separated ingredient line under an inline label', () => {
+    expect(parsed.ingredients.map(i => i.name)).toEqual([
+      '계란',
+      '당근',
+      '대파',
+      '소금',
+      '식용유',
+    ]);
+  });
+
+  it('reads unnumbered steps — copied numbering is visual, not textual', () => {
+    expect(parsed.steps).toHaveLength(4);
+    expect(parsed.steps[2]?.durationSec).toBe(180); // "3~4분간" → lower bound
+  });
+
+  it('keeps promotional boilerplate out of the steps', () => {
+    expect(parsed.steps.some(s => s.text.includes('구독'))).toBe(false);
+    expect(parsed.unparsed.some(l => l.includes('구독'))).toBe(true);
+  });
+});
+
+describe('parseRecipeText — format D: bracketed asides', () => {
+  const parsed = parseRecipeText(FORMAT_D_ASIDES);
+
+  it('does not treat a bracketed aside as an ingredient', () => {
+    expect(parsed.ingredients.some(i => i.name.includes('비율'))).toBe(false);
+    expect(parsed.unparsed).toContain('[고기와양념의비율(3:1)]');
+  });
+
+  it('pulls a substitution into the note', () => {
+    expect(parsed.ingredients[0]).toMatchObject({
+      name: '돼지고기 앞다리살',
+      note: '또는 목살',
+      qty: 600,
+      unit: 'g',
+    });
+  });
+});
+
+describe('parseRecipeText — format F: sub-sections', () => {
+  const parsed = parseRecipeText(FORMAT_F_SUBSECTIONS);
+
+  it('reads 주재료 / 부재료 / 양념 as ingredient sections', () => {
+    // 주재료 going unrecognised silently dropped its entire line.
+    expect(parsed.ingredients).toHaveLength(10);
+    expect(parsed.ingredients.map(i => i.name).slice(0, 3)).toEqual(['당면', '시금치', '당근']);
+    expect(parsed.unparsed).toEqual([]);
+  });
+
+  it('keeps the serving count out of the title', () => {
+    expect(parsed.title).toBe('잡채');
+    expect(parsed.servings).toBe(4);
+  });
+});
+
+describe('parseRecipeText — every fixture', () => {
+  it.each(ALL_FIXTURES.map(f => [f.name, f.text] as const))(
+    '%s parses without losing content',
+    (_name, text) => {
+      const parsed = parseRecipeText(text);
+      expect(parsed.ingredients.length).toBeGreaterThan(0);
+      // No ingredient name may start with a digit — that is the signature of an
+      // amount line mistaken for an ingredient.
+      expect(parsed.ingredients.filter(i => /^\d/.test(i.name))).toEqual([]);
+      // Every ingredient carries the line it came from, for the correction UI.
+      expect(parsed.ingredients.every(i => i.raw.length > 0)).toBe(true);
+    },
+  );
+});
+
+describe('optional ingredients', () => {
+  it('marks an ingredient the source flags as optional', () => {
+    expect(parseIngredientPhrase('청양고추 1개 (선택)')).toMatchObject({
+      name: '청양고추',
+      qty: 1,
+      unit: '개',
+      optional: true,
+    });
+  });
+
+  it('leaves ordinary ingredients required', () => {
+    // M3 counts non-optional ingredients as required; a false positive here
+    // would make every suggestion looser than the recipe actually is.
+    expect(parseIngredientPhrase('두부 1/2모')).toMatchObject({ optional: false });
+  });
+
+  it('recognises the English wording', () => {
+    expect(parseIngredientPhrase('1 tsp chilli flakes (optional)')).toMatchObject({
+      name: 'chilli flakes',
+      optional: true,
+    });
   });
 });
