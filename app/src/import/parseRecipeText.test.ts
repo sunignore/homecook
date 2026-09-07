@@ -10,7 +10,7 @@ import {
   FORMAT_C_VIDEO,
   FORMAT_D_ASIDES,
   FORMAT_F_SUBSECTIONS,
-} from './fixtures';
+} from '../test/fixtures/pasteFormats';
 
 // Fixtures are shaped like real pasted sources (Korean blog posts, YouTube
 // descriptions), because the parser's only job is to beat typing on THOSE —
@@ -306,4 +306,28 @@ describe('parseRecipeText — every fixture', () => {
       expect(parsed.ingredients.every(i => i.raw.length > 0)).toBe(true);
     },
   );
+});
+
+describe('optional ingredients', () => {
+  it('marks an ingredient the source flags as optional', () => {
+    expect(parseIngredientPhrase('청양고추 1개 (선택)')).toMatchObject({
+      name: '청양고추',
+      qty: 1,
+      unit: '개',
+      optional: true,
+    });
+  });
+
+  it('leaves ordinary ingredients required', () => {
+    // M3 counts non-optional ingredients as required; a false positive here
+    // would make every suggestion looser than the recipe actually is.
+    expect(parseIngredientPhrase('두부 1/2모')).toMatchObject({ optional: false });
+  });
+
+  it('recognises the English wording', () => {
+    expect(parseIngredientPhrase('1 tsp chilli flakes (optional)')).toMatchObject({
+      name: 'chilli flakes',
+      optional: true,
+    });
+  });
 });

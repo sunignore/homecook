@@ -1,0 +1,212 @@
+/* Import + correction screen. Token values only (docs/design.md §7). */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hc-space-2);
+}
+
+.field-narrow {
+  max-width: 8rem;
+}
+
+.field-label {
+  color: var(--muted-foreground);
+  font-size: var(--hc-size-caption);
+}
+
+input,
+textarea,
+select {
+  padding: var(--hc-space-3);
+  border: 1px solid var(--input-border);
+  border-radius: var(--hc-radius-md);
+  background: var(--input-bg);
+  color: var(--foreground);
+}
+
+.paste-area {
+  font-family: var(--hc-font-mono);
+  font-size: var(--hc-size-caption);
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.actions {
+  display: flex;
+  gap: var(--hc-space-3);
+  align-items: center;
+}
+
+/* Save stays reachable without scrolling back up a long correction table. */
+.actions-sticky {
+  position: sticky;
+  bottom: calc(var(--hc-space-16) + env(safe-area-inset-bottom));
+  padding: var(--hc-space-3) 0;
+  background: var(--background);
+}
+
+.btn-primary {
+  background: var(--button-primary-bg);
+  color: var(--button-primary-fg);
+  font-weight: 700;
+  padding: var(--hc-space-3) var(--hc-space-6);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-quiet {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--hc-space-2);
+  background: transparent;
+  color: var(--button-quiet-fg);
+  border-color: var(--card-border);
+}
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 44px floor for imprecise taps (docs/design.md §6, E2). */
+  min-width: var(--hc-target-min);
+  min-height: var(--hc-target-min);
+  background: transparent;
+  color: var(--button-quiet-fg);
+  padding: var(--hc-space-2);
+}
+
+.btn-icon:hover {
+  color: var(--button-danger-fg);
+  background: var(--button-danger-bg);
+}
+
+.banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--hc-space-3);
+  margin: 0;
+  padding: var(--hc-space-3) var(--hc-space-4);
+  border: 1px solid transparent;
+  border-radius: var(--hc-radius-md);
+  font-size: var(--hc-size-caption);
+  line-height: 1.5;
+}
+
+.banner-new {
+  background: var(--amber-bg);
+  color: var(--amber-fg);
+  border-color: var(--amber-border);
+}
+
+.banner-error {
+  background: var(--red-bg);
+  color: var(--red-fg);
+  border-color: var(--red-border);
+}
+
+.row-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hc-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+ol.row-list {
+  list-style: decimal;
+  padding-inline-start: var(--hc-space-6);
+}
+
+.ing-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hc-space-2);
+  padding: var(--hc-space-3);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--hc-radius-md);
+}
+
+.ing-main {
+  display: flex;
+  gap: var(--hc-space-2);
+  align-items: center;
+}
+
+.ing-name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ing-qty {
+  width: 4.5rem;
+  flex: 0 0 auto;
+}
+
+.ing-unit {
+  width: 4.5rem;
+  flex: 0 0 auto;
+}
+
+.ing-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--hc-space-2);
+  flex-wrap: wrap;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--hc-space-1);
+  padding: var(--hc-space-1) var(--hc-space-2);
+  border-radius: var(--hc-radius-full);
+  font-size: var(--hc-size-caption);
+  font-weight: 700;
+}
+
+/* New vs known is icon + text + colour together — never colour alone. */
+.tag-new {
+  background: var(--amber-bg);
+  color: var(--amber-fg);
+}
+
+.tag-known {
+  background: var(--green-bg);
+  color: var(--green-fg);
+}
+
+.tag-timer {
+  background: var(--chip-bg);
+  color: var(--chip-fg);
+}
+
+.note {
+  font-size: var(--hc-size-caption);
+}
+
+.step-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hc-space-2);
+  align-items: flex-start;
+}
+
+.step-row textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+.unparsed-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hc-space-2);
+  margin: 0;
+  padding-inline-start: var(--hc-space-6);
+  font-size: var(--hc-size-caption);
+}

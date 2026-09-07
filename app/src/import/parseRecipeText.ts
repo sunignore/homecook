@@ -17,6 +17,12 @@ export interface ParsedIngredient {
   qty: number | null;
   unit: string;
   note?: string;
+  /**
+   * Marked optional by the source, e.g. "청양고추 1개 (선택)".
+   * M3 scoring counts only non-optional ingredients as required, so losing this
+   * at parse time would make every suggestion stricter than the recipe is.
+   */
+  optional: boolean;
   /** The source line, so the correction UI can show what this came from. */
   raw: string;
 }
@@ -83,6 +89,9 @@ const TO_TASTE = ['약간', '적당량', '적당히', '조금', '기호껏', '�
  * lands in `steps` and shows up mid-recipe in cook mode, which is exactly where
  * a stray line is most disruptive.
  */
+/** Marks an ingredient the recipe treats as optional. */
+const OPTIONAL_NOTE = /선택|생략\s*가능|없어도|optional|to taste if/i;
+
 const PROMO = /구독|좋아요|알림\s*설정|채널|인스타|블로그\s*방문|협찬|광고\s*문의|비즈니스\s*문의|저작권|무단\s*전재|subscribe|follow me|affiliate/i;
 
 const BULLET = /^\s*(?:[-–—•·*▪◦]|\d+[.)]|[①-⑳])\s*/;
@@ -122,12 +131,23 @@ const QTY_UNIT = new RegExp(
   String.raw`(\d+(?:\.\d+)?(?:\s*[~〜–—-]\s*\d+(?:\.\d+)?)?(?:\s*\/\s*\d+)?(?:\s*과\s*\d+\s*\/\s*\d+)?)\s*(${UNIT_ALTERNATION})?`,
 );
 
+/**
+ * Lift a parenthetical out of a phrase, wherever it sits.
+ *
+ * Sources put it mid-phrase ("돼지고기(목살) 200g") and trailing
+ * ("청양고추 1개 (선택)") about equally often, so anchoring to the end misses
+ * half of them.
+ */
 function stripNote(name: string): { name: string; note?: string } {
-  const paren = /^(.*?)\s*[(（]([^)）]*)[)）]\s*$/.exec(name);
-  if (paren?.[1] && paren[2]) {
-    return { name: paren[1].trim(), note: paren[2].trim() };
-  }
-  return { name: name.trim() };
+  const paren = /[(（]([^)）]*)[)）]/.exec(name);
+  if (!paren) return { name: name.trim() };
+
+  const note = paren[1]?.trim();
+  const cleaned = `${name.slice(0, paren.index)} ${name.slice(paren.index + paren[0].length)}`
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return { name: cleaned, note: note || undefined };
 }
 
 // ── ingredient lines ─────────────────────────────────────────────────────────
@@ -137,31 +157,48 @@ function stripNote(name: string): { name: string; note?: string } {
  * sources write "대파 1대" while English ones write "2 tbsp soy sauce".
  */
 export function parseIngredientPhrase(phrase: string, raw = phrase): ParsedIngredient | null {
-  const text = phrase.replace(BULLET, '').trim();
+  const stripped = phrase.replace(BULLET, '').trim();
+  if (!stripped) return null;
+
+  // Parentheticals come out FIRST, before any quantity matching. A trailing
+  // note — "청양고추 1개 (선택)" — otherwise sits between the quantity and the
+  // end of the string and defeats the quantity-last anchor, leaving the amount
+  // stranded inside the name.
+  const { name: text, note: parenNote } = stripNote(stripped);
   if (!text) return null;
+
+  const finish = (
+    fields: Pick<ParsedIngredient, 'name' | 'qty' | 'unit'>,
+    extraNote?: string,
+  ): ParsedIngredient => {
+    const note = [parenNote, extraNote].filter(Boolean).join(' ') || undefined;
+    return { ...fields, note, optional: OPTIONAL_NOTE.test(note ?? ''), raw };
+  };
 
   // "소금 약간" — an unmeasured amount, not a parse failure.
   const toTaste = TO_TASTE.find(w => text.toLowerCase().endsWith(w.toLowerCase()));
   if (toTaste) {
     const name = text.slice(0, text.length - toTaste.length).trim().replace(/[:：]$/, '');
     if (!name) return null;
-    const { name: clean, note } = stripNote(name);
-    return { name: clean, qty: null, unit: '', note: note ?? toTaste, raw };
+    return finish({ name, qty: null, unit: '' }, parenNote ? undefined : toTaste);
   }
 
   // Quantity-first (English convention): "2 tbsp soy sauce", "300g chicken".
   const leading = new RegExp(String.raw`^${QTY_UNIT.source}\s+(.+)$`).exec(text);
   if (leading?.[3]) {
-    const { name, note } = stripNote(leading[3]);
-    return { name, qty: parseQuantity(leading[1]!), unit: leading[2] ?? '', note, raw };
+    return finish({
+      name: leading[3].trim(),
+      qty: parseQuantity(leading[1]!),
+      unit: leading[2] ?? '',
+    });
   }
 
   // Quantity-last (Korean convention): "대파 1대", "두부 1/2모".
   const trailing = new RegExp(String.raw`^(.+?)\s*${QTY_UNIT.source}\s*$`).exec(text);
   if (trailing?.[1] && trailing[2]) {
-    const { name, note } = stripNote(trailing[1]);
+    const name = trailing[1].trim();
     if (name) {
-      return { name, qty: parseQuantity(trailing[2]), unit: trailing[3] ?? '', note, raw };
+      return finish({ name, qty: parseQuantity(trailing[2]), unit: trailing[3] ?? '' });
     }
   }
 
@@ -169,10 +206,8 @@ export function parseIngredientPhrase(phrase: string, raw = phrase): ParsedIngre
   // amount follows on the next line (see parsePureAmount) or the correction UI
   // fills it in. Reject anything sentence-shaped.
   if (text.length <= 30 && !/[.!?]$/.test(text)) {
-    const { name: withoutParen, note: parenNote } = stripNote(text.replace(/[:：]$/, ''));
-    const { name, note: altNote } = splitAlternativeNote(withoutParen);
-    const note = [parenNote, altNote].filter(Boolean).join(' ') || undefined;
-    if (name) return { name, qty: null, unit: '', note, raw };
+    const { name, note: altNote } = splitAlternativeNote(text.replace(/[:：]$/, ''));
+    if (name) return finish({ name, qty: null, unit: '' }, altNote);
   }
 
   return null;

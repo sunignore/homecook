@@ -2,6 +2,8 @@ import { NavLink, Navigate, Route, Routes } from 'react-router-dom';
 import { BookOpen, CalendarDays, ChefHat, Refrigerator, Settings as SettingsIcon } from 'lucide-react';
 import Home from './routes/Home';
 import Recipes from './routes/Recipes';
+import RecipeImport from './routes/RecipeImport';
+import RecipeDetail from './routes/RecipeDetail';
 import Pantry from './routes/Pantry';
 import Plan from './routes/Plan';
 import Settings from './routes/Settings';
@@ -25,6 +27,8 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/recipes" element={<Recipes />} />
+          <Route path="/recipes/import" element={<RecipeImport />} />
+          <Route path="/recipes/:id" element={<RecipeDetail />} />
           <Route path="/pantry" element={<Pantry />} />
           <Route path="/plan" element={<Plan />} />
           <Route path="/settings" element={<Settings />} />
