@@ -8,6 +8,7 @@ import RecipeEdit from './routes/RecipeEdit';
 import Pantry from './routes/Pantry';
 import Plan from './routes/Plan';
 import Settings from './routes/Settings';
+import CookMode from './routes/CookMode';
 import './App.css';
 
 // Bottom tabs, one column, max 640px (docs/design.md layout decision). Cook mode
@@ -22,6 +23,17 @@ const TABS = [
 ] as const;
 
 export default function App() {
+  return (
+    <Routes>
+      {/* Cook mode sits OUTSIDE the shell: no tab bar to hit by accident with a
+          wet hand mid-recipe (docs/design.md E2/E4). */}
+      <Route path="/recipes/:id/cook" element={<CookMode />} />
+      <Route path="*" element={<Shell />} />
+    </Routes>
+  );
+}
+
+function Shell() {
   return (
     <div className="app-shell">
       <main className="app-main">

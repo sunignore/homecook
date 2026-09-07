@@ -223,3 +223,12 @@
   object-fit: cover;
   border-radius: var(--hc-radius-lg);
 }
+
+/* The primary action on a recipe: bigger than the rest of the page. */
+.cook-start {
+  min-height: var(--hc-target-cook);
+  font-size: var(--hc-size-lead);
+  background: var(--button-primary-bg);
+  color: var(--button-primary-fg);
+  font-weight: 700;
+}
