@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased] 2026-09-07
 
 ### Added
+- **[2026-09-07]**: **Photos.** A recipe can carry one picture, added from the camera roll or the camera itself. Every image is decoded, downscaled to a 1280px long edge and re-encoded as JPEG before it reaches the database (docs/data-model.md §1) — a phone camera hands over 3-6 MB per shot, which would fill the origin quota within a few dozen recipes, and eviction is permanent loss (ADR-0001). Measured: a 9.4 MB source became 14.7 KB. Re-encoding also normalises HEIC from an iPhone, which would otherwise survive backup and restore and still display nothing.
+- **[2026-09-07]**: **Tags.** Tags can be typed (Enter or comma) or picked from the tags already used elsewhere in the archive, so one dish category does not end up spelled three ways and split across three filters. A tag on a recipe links to the filtered list, and the filter lives in the URL so it survives a refresh.
+- **[2026-09-07]**: The recipe list shows a thumbnail and the recipe's tags; the detail screen shows the photo full width.
+- **[2026-09-07]**: `app/src/photos/photoStore.ts` — attaching, replacing and clearing a recipe's photo, each in one transaction, plus `pruneOrphanPhotos` as a safety net. Replacing a photo deletes the one it supersedes: an orphaned blob is invisible in the UI while still counting against the quota and inflating every backup, and nothing else would ever collect it.
+- **[2026-09-07]**: `app/src/components/RecipePhoto.tsx` — renders a stored Blob and revokes its object URL on unmount. Without that, scrolling the recipe list leaks one URL per card for the life of the session.
+
+
+### Added
 - **[2026-09-07]**: **Cook log** — the M1 completion requirement alongside the archive. A recipe's detail screen records a session with a rating, a memo, and the "next time" tweak that is the whole point: "half the sugar" otherwise lives in someone's head and is gone by the next attempt. The recipe header shows how many times it has been made, the average rating, and when it was last cooked.
 - **[2026-09-07]**: **Recipe editing** — `/recipes/:id/edit`. Previously a typo in a title meant deleting the recipe and re-importing it. Edits go through the same ingredient resolution as an import, so renaming an ingredient can land on an existing one instead of forking the vocabulary (ADR-0002), and `createdAt` is preserved because the recipe was not created again.
 - **[2026-09-07]**: `app/src/components/RecipeDraftForm.tsx` — the correction table extracted from the import screen and shared with editing. Both are the same job — get the ingredient rows right before they are written — and a second copy would drift.

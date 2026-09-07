@@ -5,6 +5,7 @@ import { ArrowLeft, ChefHat, Pencil, Star, Timer, Trash2 } from 'lucide-react';
 import { db } from '../db/db';
 import { addCookLog, cookLogsFor, deleteCookLog, deleteRecipeWithLogs, summarize } from '../cooklog/cookLog';
 import type { Rating } from '../db/types';
+import RecipePhoto from '../components/RecipePhoto';
 import './Recipes.css';
 
 function formatQty(qty: number | null, unit: string): string {
@@ -109,6 +110,20 @@ export default function RecipeDetail() {
           </>
         )}
       </p>
+
+      <RecipePhoto photoId={recipe.photoId} alt={`${recipe.title} 사진`} className="detail-photo" />
+
+      {recipe.tags.length > 0 && (
+        <ul className="tag-list">
+          {recipe.tags.map(tag => (
+            <li key={tag}>
+              <Link to={`/recipes?tag=${encodeURIComponent(tag)}`} className="tag tag-timer">
+                {tag}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
 
       <section className="stack" aria-labelledby="detail-ing">
         <h2 id="detail-ing">재료</h2>
