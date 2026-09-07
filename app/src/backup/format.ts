@@ -6,7 +6,7 @@
 // explicitly and validated on the way in: a backup that cannot be read is worse
 // than no backup, because the user believed they were covered.
 
-import type { CookLog, Ingredient, Recipe } from '../db/types';
+import type { CookLog, Ingredient, MealPlan, PantryItem, Recipe, ShoppingItem } from '../db/types';
 
 /** Identifies the file as ours, so an unrelated zip fails fast and clearly. */
 export const BACKUP_FORMAT = 'homecook-backup';
@@ -14,8 +14,9 @@ export const BACKUP_FORMAT = 'homecook-backup';
 /** Envelope version. Bump when the envelope shape changes, not the Dexie schema. */
 export const BACKUP_VERSION = 1;
 
-/** Dexie schema version the data was exported from (docs/data-model.md §3). */
-export const CURRENT_SCHEMA_VERSION = 1;
+/** Dexie schema version the data was exported from (docs/data-model.md §3).
+ *  v2 added pantryItems (M3), v3 added mealPlans + shoppingItems (M4). */
+export const CURRENT_SCHEMA_VERSION = 3;
 
 export const MANIFEST_NAME = 'data.json';
 export const PHOTO_DIR = 'photos';
@@ -39,11 +40,17 @@ export interface BackupManifest {
     ingredients: number;
     cookLogs: number;
     photos: number;
+    pantryItems: number;
+    mealPlans: number;
+    shoppingItems: number;
   };
   recipes: Recipe[];
   ingredients: Ingredient[];
   cookLogs: CookLog[];
   photos: PhotoEntry[];
+  pantryItems: PantryItem[];
+  mealPlans: MealPlan[];
+  shoppingItems: ShoppingItem[];
 }
 
 export class BackupFormatError extends Error {
@@ -102,5 +109,28 @@ export function validateManifest(value: unknown): BackupManifest {
     }
   }
 
-  return value as unknown as BackupManifest;
+  // pantryItems/mealPlans/shoppingItems arrived in schemaVersion 2 and 3
+  // respectively (data-model §3). A backup made before that has no idea they
+  // exist, which is not corruption — it just predates M3/M4 — so a missing
+  // table defaults to empty rather than failing the restore.
+  const withNewTables = value as Record<string, unknown>;
+  for (const table of ['pantryItems', 'mealPlans', 'shoppingItems'] as const) {
+    if (withNewTables[table] !== undefined && !Array.isArray(withNewTables[table])) {
+      throw new BackupFormatError(`백업이 손상되었습니다 — ${table} 항목이 올바르지 않습니다.`);
+    }
+  }
+
+  const manifest = value as unknown as BackupManifest;
+  return {
+    ...manifest,
+    pantryItems: manifest.pantryItems ?? [],
+    mealPlans: manifest.mealPlans ?? [],
+    shoppingItems: manifest.shoppingItems ?? [],
+    counts: {
+      ...manifest.counts,
+      pantryItems: manifest.counts?.pantryItems ?? 0,
+      mealPlans: manifest.counts?.mealPlans ?? 0,
+      shoppingItems: manifest.counts?.shoppingItems ?? 0,
+    },
+  };
 }

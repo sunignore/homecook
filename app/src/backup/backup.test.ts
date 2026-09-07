@@ -65,6 +65,32 @@ async function seed() {
     blob: new Blob([new Uint8Array([137, 80, 78, 71, 1, 2, 3])], { type: 'image/png' }),
     createdAt: now,
   });
+  await db.pantryItems.add({
+    id: 'pi-1',
+    ingredientId: 'i-a',
+    qty: 1,
+    unit: 'ea',
+    location: 'fridge',
+    createdAt: now,
+    updatedAt: now,
+  });
+  await db.mealPlans.add({
+    id: 'mp-1',
+    date: '2026-09-07',
+    slot: 'dinner',
+    recipeId: 'r-1',
+    createdAt: now,
+    updatedAt: now,
+  });
+  await db.shoppingItems.add({
+    id: 'si-1',
+    ingredientId: 'i-b',
+    qty: 2,
+    unit: 'ea',
+    checked: false,
+    createdAt: now,
+    updatedAt: now,
+  });
 }
 
 async function wipe() {
@@ -73,6 +99,9 @@ async function wipe() {
     db.ingredients.clear(),
     db.cookLogs.clear(),
     db.photos.clear(),
+    db.pantryItems.clear(),
+    db.mealPlans.clear(),
+    db.shoppingItems.clear(),
   ]);
 }
 
@@ -92,7 +121,15 @@ describe('exportBackup', () => {
 
     const manifest = JSON.parse(new TextDecoder().decode(archive[MANIFEST_NAME]!));
     expect(manifest.format).toBe(BACKUP_FORMAT);
-    expect(manifest.counts).toEqual({ recipes: 2, ingredients: 2, cookLogs: 1, photos: 1 });
+    expect(manifest.counts).toEqual({
+      recipes: 2,
+      ingredients: 2,
+      cookLogs: 1,
+      photos: 1,
+      pantryItems: 1,
+      mealPlans: 1,
+      shoppingItems: 1,
+    });
   });
 
   it('exports an empty archive without failing', async () => {
@@ -118,11 +155,22 @@ describe('restore round trip', () => {
 
     const restored = await restoreBackup(await readBackup(blob), db);
 
-    expect(restored).toEqual({ recipes: 2, ingredients: 2, cookLogs: 1, photos: 1 });
+    expect(restored).toEqual({
+      recipes: 2,
+      ingredients: 2,
+      cookLogs: 1,
+      photos: 1,
+      pantryItems: 1,
+      mealPlans: 1,
+      shoppingItems: 1,
+    });
     expect(await db.recipes.count()).toBe(2);
     expect(await db.ingredients.count()).toBe(2);
     expect(await db.cookLogs.count()).toBe(1);
     expect(await db.photos.count()).toBe(1);
+    expect(await db.pantryItems.count()).toBe(1);
+    expect(await db.mealPlans.count()).toBe(1);
+    expect(await db.shoppingItems.count()).toBe(1);
   });
 
   it('preserves photo bytes and mime type', async () => {
@@ -173,6 +221,29 @@ describe('restore round trip', () => {
 
     expect(await db.recipes.count()).toBe(2);
     expect(await db.recipes.get('r-9')).toBeUndefined();
+  });
+
+  it('restores a pre-M3/M4 backup with no pantry, plan or shopping data', async () => {
+    const { zipSync } = await import('fflate');
+    const manifest = {
+      format: BACKUP_FORMAT,
+      version: 1,
+      schemaVersion: 1,
+      exportedAt: now,
+      counts: { recipes: 1, ingredients: 1, cookLogs: 0, photos: 0 },
+      recipes: [recipeInput('r-1', '옛날 레시피', ['i-a'])],
+      ingredients: [ingredient('i-a', '두부')],
+      cookLogs: [],
+      photos: [],
+    };
+    const zipped = zipSync({ [MANIFEST_NAME]: new TextEncoder().encode(JSON.stringify(manifest)) });
+
+    const restored = await restoreBackup(await readBackup(new Blob([zipped])), db);
+
+    expect(restored).toMatchObject({ recipes: 1, pantryItems: 0, mealPlans: 0, shoppingItems: 0 });
+    expect(await db.pantryItems.count()).toBe(0);
+    expect(await db.mealPlans.count()).toBe(0);
+    expect(await db.shoppingItems.count()).toBe(0);
   });
 });
 

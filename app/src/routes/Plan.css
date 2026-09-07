@@ -1,0 +1,116 @@
+/* Weekly meal plan + shopping list (M4). Token values only (docs/design.md §7). */
+
+.page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hc-space-3);
+  flex-wrap: wrap;
+}
+
+.page-head h2 svg {
+  vertical-align: -3px;
+  margin-inline-end: var(--hc-space-1);
+}
+
+.week-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--hc-space-2);
+}
+
+.plan-day {
+  padding: var(--hc-space-3);
+}
+
+.plan-day-heading {
+  font-size: var(--hc-size-lead);
+}
+
+.plan-slot-row {
+  display: flex;
+  align-items: center;
+  gap: var(--hc-space-2);
+  flex-wrap: wrap;
+}
+
+.plan-slot-label {
+  width: 3rem;
+  flex: 0 0 auto;
+}
+
+.plan-slot-select {
+  flex: 1 1 8rem;
+  min-width: 0;
+}
+
+.plan-slot-freetext {
+  flex: 1 1 8rem;
+  min-width: 0;
+}
+
+.plan-slot-freetext:disabled {
+  opacity: 0.5;
+}
+
+/* Reused by the shopping list's manual-add row (same shape as the Pantry
+   quick-add row) — kept local rather than imported across routes on purpose
+   (src/styles/components.css header comment). */
+.pantry-add-row {
+  display: flex;
+  gap: var(--hc-space-2);
+  align-items: center;
+}
+
+.pantry-add-name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pantry-add-qty {
+  width: 4.5rem;
+  flex: 0 0 auto;
+}
+
+.pantry-add-unit {
+  width: 4.5rem;
+  flex: 0 0 auto;
+}
+
+.shopping-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hc-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.shopping-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hc-space-2);
+  padding: var(--hc-space-2) var(--hc-space-3);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--hc-radius-md);
+}
+
+.shopping-checked {
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+
+.shopping-check {
+  display: flex;
+  align-items: center;
+  gap: var(--hc-space-2);
+}
+
+.shopping-check input {
+  min-height: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+}

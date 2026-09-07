@@ -1,0 +1,92 @@
+/* Pantry (M3). Token values only (docs/design.md §7). */
+
+.pantry-add-row {
+  display: flex;
+  gap: var(--hc-space-2);
+  align-items: center;
+}
+
+.pantry-add-name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pantry-add-qty {
+  width: 4.5rem;
+  flex: 0 0 auto;
+}
+
+.pantry-add-unit {
+  width: 4.5rem;
+  flex: 0 0 auto;
+}
+
+.pantry-add-location,
+.pantry-add-expiry {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pantry-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hc-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pantry-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hc-space-2);
+  padding: var(--hc-space-3);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--hc-radius-md);
+}
+
+.pantry-row-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hc-space-2);
+}
+
+.pantry-name {
+  font-weight: 700;
+}
+
+.pantry-row-fields {
+  display: flex;
+  gap: var(--hc-space-2);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.pantry-qty {
+  width: 4rem;
+  flex: 0 0 auto;
+}
+
+.pantry-location {
+  width: 5rem;
+  flex: 0 0 auto;
+}
+
+.pantry-expiry {
+  flex: 1 1 auto;
+  min-width: 8.5rem;
+}
+
+/* Expiry status is icon + text + colour together, never colour alone
+   (docs/design.md §6, E3). */
+.tag-expired {
+  background: var(--red-bg);
+  color: var(--red-fg);
+}
+
+.tag-soon {
+  background: var(--amber-bg);
+  color: var(--amber-fg);
+}
