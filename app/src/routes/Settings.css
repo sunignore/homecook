@@ -1,0 +1,44 @@
+/* Settings screen — styles specific to this route.
+   Shared primitives live in src/styles/components.css. */
+
+/* Settings — storage status and backup. Token values only (docs/design.md §7). */
+
+.kv {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
+  gap: var(--hc-space-4);
+  margin: 0;
+}
+
+.kv div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hc-space-1);
+}
+
+.kv dt {
+  color: var(--muted-foreground);
+  font-size: var(--hc-size-caption);
+}
+
+.kv dd {
+  margin: 0;
+  font-size: var(--hc-size-lead);
+  font-weight: 700;
+}
+
+.confirm {
+  border-color: var(--red-border);
+}
+
+.hint {
+  display: flex;
+  align-items: center;
+  gap: var(--hc-space-2);
+  font-size: var(--hc-size-caption);
+  margin: 0;
+}
+
+.hint code {
+  font-family: var(--hc-font-mono);
+}

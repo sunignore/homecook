@@ -2,6 +2,7 @@
    raw px outside the primitive scale (docs/design.md §7 [Consistency]). */
 
 @import './tokens.css';
+@import './components.css';
 
 *,
 *::before,
