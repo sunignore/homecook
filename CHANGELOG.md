@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 - **[2026-09-07]**: `app/src/import/parseRecipeText.ts` — paste-to-parse recipe importer covering Korean and English sources: quantity-first and quantity-last orders, fractions and mixed numbers, ranges, to-taste amounts, parenthesised notes, and step-duration extraction for the M2 timers. Unclassifiable lines are surfaced in `unparsed`, never dropped.
 
 ### Fixed
+- **[2026-09-07]**: `.gitignore` — ignore `*.tsbuildinfo`, and untrack `app/tsconfig.tsbuildinfo`, which was committed as a build artifact in the initial import.
 - **[2026-09-07]**: `scripts/SCRIPTS.md` — `upgrade-project.ts` registry row was tagged layer `L0` while the file ships into scaffolded projects, so `verify-scripts.ts` skipped the row and then reported the copied file as unregistered, failing the audit on a fresh scaffold. Corrected to `L0+L1` to match the workspace-root registry.
 - **[2026-09-07]**: `docs/user-guide.md`, `docs/user-guide_ko.md` — dropped the `../GEMINI.md` link, which is dangling in a project scaffolded with `--platform claude`.
 
