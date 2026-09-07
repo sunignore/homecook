@@ -57,6 +57,30 @@ export async function importRecipe(
   draft: RecipeDraft,
   database: HomecookDB = db,
 ): Promise<string> {
+  return persistDraft(draft, undefined, database);
+}
+
+/**
+ * Update an existing recipe from an edited draft.
+ *
+ * Goes through the same ingredient resolution as an import, so renaming an
+ * ingredient while editing can resolve onto an existing one rather than forking
+ * the vocabulary (ADR-0002). `createdAt` is preserved — the recipe was not
+ * created again.
+ */
+export async function updateRecipe(
+  recipeId: string,
+  draft: RecipeDraft,
+  database: HomecookDB = db,
+): Promise<string> {
+  return persistDraft(draft, recipeId, database);
+}
+
+async function persistDraft(
+  draft: RecipeDraft,
+  existingId: string | undefined,
+  database: HomecookDB,
+): Promise<string> {
   const title = draft.title.trim();
   if (!title) {
     throw new EmptyRecipeError('A recipe needs a title.');
@@ -64,7 +88,7 @@ export async function importRecipe(
 
   const rows = draft.ingredients.filter(i => i.name.trim().length > 0);
   const now = Date.now();
-  const recipeId = newId();
+  const recipeId = existingId ?? newId();
 
   await database.transaction('rw', database.ingredients, database.recipes, async () => {
     // Re-check inside the transaction rather than trusting the resolution the
@@ -115,6 +139,11 @@ export async function importRecipe(
 
     if (created.length > 0) await database.ingredients.bulkAdd(created);
 
+    const previous = existingId ? await database.recipes.get(existingId) : undefined;
+    if (existingId && !previous) {
+      throw new EmptyRecipeError('수정하려는 레시피를 찾을 수 없습니다.');
+    }
+
     const recipe: Omit<Recipe, 'ingredientIds' | 'updatedAt'> = {
       id: recipeId,
       title,
@@ -128,7 +157,7 @@ export async function importRecipe(
         optional: row.optional,
       })),
       steps: draft.steps.filter(s => s.text.trim().length > 0),
-      createdAt: now,
+      createdAt: previous?.createdAt ?? now,
       ...(draft.sourceUrl ? { sourceUrl: draft.sourceUrl } : {}),
       ...(draft.sourceText ? { sourceText: draft.sourceText } : {}),
       ...(draft.notes ? { notes: draft.notes } : {}),
