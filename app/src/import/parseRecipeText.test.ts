@@ -331,3 +331,24 @@ describe('optional ingredients', () => {
     });
   });
 });
+
+describe('optional marker does not duplicate as a note', () => {
+  it('drops a note that only marks optionality', () => {
+    const parsed = parseIngredientPhrase('청양고추 1개 (선택)');
+    expect(parsed).toMatchObject({ name: '청양고추', optional: true });
+    expect(parsed?.note).toBeUndefined();
+  });
+
+  it('keeps the rest of a note that also marks optionality', () => {
+    const parsed = parseIngredientPhrase('청양고추 1개 (선택, 매운맛)');
+    expect(parsed?.optional).toBe(true);
+    expect(parsed?.note).toBe('매운맛');
+  });
+
+  it('leaves an ordinary note alone', () => {
+    expect(parseIngredientPhrase('돼지고기(목살) 200g')).toMatchObject({
+      note: '목살',
+      optional: false,
+    });
+  });
+});

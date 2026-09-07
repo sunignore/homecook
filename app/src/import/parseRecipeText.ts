@@ -171,8 +171,21 @@ export function parseIngredientPhrase(phrase: string, raw = phrase): ParsedIngre
     fields: Pick<ParsedIngredient, 'name' | 'qty' | 'unit'>,
     extraNote?: string,
   ): ParsedIngredient => {
-    const note = [parenNote, extraNote].filter(Boolean).join(' ') || undefined;
-    return { ...fields, note, optional: OPTIONAL_NOTE.test(note ?? ''), raw };
+    const combined = [parenNote, extraNote].filter(Boolean).join(' ').trim();
+    const optional = OPTIONAL_NOTE.test(combined);
+
+    // A note that says nothing but "optional" is already expressed by the flag;
+    // keeping it too shows the word twice on the recipe screen.
+    const remainder = combined
+      .replace(OPTIONAL_NOTE, '')
+      .replace(/\s+/g, ' ')
+      // Removing the marker can leave the separator that joined it, e.g.
+      // "(선택, 매운맛)" -> ", 매운맛".
+      .replace(/^[\s,·/、]+|[\s,·/、]+$/g, '')
+      .trim();
+    const note = (optional ? remainder : combined) || undefined;
+
+    return { ...fields, note, optional, raw };
   };
 
   // "소금 약간" — an unmeasured amount, not a parse failure.

@@ -4,6 +4,7 @@ import Home from './routes/Home';
 import Recipes from './routes/Recipes';
 import RecipeImport from './routes/RecipeImport';
 import RecipeDetail from './routes/RecipeDetail';
+import RecipeEdit from './routes/RecipeEdit';
 import Pantry from './routes/Pantry';
 import Plan from './routes/Plan';
 import Settings from './routes/Settings';
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/recipes" element={<Recipes />} />
           <Route path="/recipes/import" element={<RecipeImport />} />
           <Route path="/recipes/:id" element={<RecipeDetail />} />
+          <Route path="/recipes/:id/edit" element={<RecipeEdit />} />
           <Route path="/pantry" element={<Pantry />} />
           <Route path="/plan" element={<Plan />} />
           <Route path="/settings" element={<Settings />} />

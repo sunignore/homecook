@@ -117,8 +117,94 @@
 }
 
 .detail-steps li {
+  display: list-item;
+}
+
+.detail-steps li::marker {
+  color: var(--muted-foreground);
+  font-weight: 700;
+}
+
+.step-body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: var(--hc-space-2);
+}
+
+.head-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--hc-space-1);
+}
+
+.cook-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--hc-space-2);
+  /* Larger than a normal action: this is the one thing the screen is for. */
+  min-height: var(--hc-target-cook);
+  font-size: var(--hc-size-lead);
+}
+
+.rating-field {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rating-row {
+  display: flex;
+  align-items: center;
+  gap: var(--hc-space-1);
+  margin-top: var(--hc-space-2);
+}
+
+.star {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--hc-target-min);
+  min-height: var(--hc-target-min);
+  padding: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+}
+
+.star-on {
+  color: var(--accent);
+}
+
+.rating-value {
+  margin-inline-start: var(--hc-space-2);
+  font-weight: 700;
+}
+
+.log-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hc-space-1);
+  padding: var(--hc-space-3);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--hc-radius-md);
+}
+
+.log-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hc-space-2);
+}
+
+.log-note,
+.log-tweak {
+  margin: 0;
+  font-size: var(--hc-size-caption);
+  line-height: 1.5;
+}
+
+.log-tweak {
+  color: var(--amber-fg);
 }

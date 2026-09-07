@@ -92,3 +92,18 @@ ol.row-list {
   padding-inline-start: var(--hc-space-6);
   font-size: var(--hc-size-caption);
 }
+
+.optional-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--hc-space-1);
+  color: var(--muted-foreground);
+  font-size: var(--hc-size-caption);
+}
+
+.optional-toggle input {
+  min-height: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  padding: 0;
+}
