@@ -5,13 +5,16 @@
 // shoppingItems (M4).
 
 import Dexie, { type Table } from 'dexie';
-import type { CookLog, Ingredient, Photo, Recipe } from './types';
+import type { CookLog, Ingredient, MealPlan, PantryItem, Photo, Recipe, ShoppingItem } from './types';
 
 export class HomecookDB extends Dexie {
   ingredients!: Table<Ingredient, string>;
   recipes!: Table<Recipe, string>;
   photos!: Table<Photo, string>;
   cookLogs!: Table<CookLog, string>;
+  pantryItems!: Table<PantryItem, string>;
+  mealPlans!: Table<MealPlan, string>;
+  shoppingItems!: Table<ShoppingItem, string>;
 
   constructor(name = 'homecook') {
     super(name);
@@ -26,6 +29,18 @@ export class HomecookDB extends Dexie {
       recipes: 'id, title, updatedAt, *tags, *ingredientIds',
       photos: 'id',
       cookLogs: 'id, recipeId, cookedAt',
+    });
+
+    // v2 — M3. Adds only a table, so no upgrade function is needed (data-model
+    // §3). `expiresAt` is indexed for the expiry-first pantry ordering.
+    this.version(2).stores({
+      pantryItems: 'id, ingredientId, expiresAt, location',
+    });
+
+    // v3 — M4. Adds only tables, so no upgrade function is needed either.
+    this.version(3).stores({
+      mealPlans: 'id, date, slot, recipeId',
+      shoppingItems: 'id, ingredientId, checked, sourceMealPlanId',
     });
   }
 }

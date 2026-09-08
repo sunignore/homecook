@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { AlertTriangle, Download, HardDrive, ShieldCheck, Upload } from 'lucide-react';
+import { AlertTriangle, Check, Download, HardDrive, ShieldCheck, Upload } from 'lucide-react';
 import { db } from '../db/db';
 import {
   backupFileName,
@@ -48,6 +48,12 @@ export default function Settings() {
     cookLogs: await db.cookLogs.count(),
     photos: await db.photos.count(),
   }));
+
+  const ingredientList = useLiveQuery(() => db.ingredients.orderBy('name').toArray(), [], []);
+
+  async function toggleStaple(id: string, isStaple: boolean) {
+    await db.ingredients.update(id, { isStaple, updatedAt: Date.now() });
+  }
 
   useEffect(() => {
     void (async () => {
@@ -172,6 +178,35 @@ export default function Settings() {
               삭제로도 사라집니다.
             </span>
           </p>
+        )}
+      </section>
+
+      {/* Staples are excluded from M3 suggestion scoring (docs/product-brief.md §5) —
+          editable here rather than baked into the guessed default so a household's
+          own always-on-hand list wins over the heuristic. */}
+      <section className="card stack" aria-labelledby="staples-heading">
+        <h2 id="staples-heading">항상 있는 재료</h2>
+        <p className="muted">
+          소금, 설탕처럼 항상 있다고 가정하는 재료입니다. 냉장고 추천 점수를 계산할 때 제외됩니다.
+        </p>
+        {ingredientList.length === 0 ? (
+          <p className="muted">아직 등록된 재료가 없습니다.</p>
+        ) : (
+          <ul className="staple-list">
+            {ingredientList.map(ing => (
+              <li key={ing.id}>
+                <button
+                  type="button"
+                  className={ing.isStaple ? 'tag tag-known staple-chip' : 'tag tag-timer staple-chip'}
+                  onClick={() => void toggleStaple(ing.id, !ing.isStaple)}
+                  aria-pressed={ing.isStaple}
+                >
+                  {ing.isStaple && <Check size={14} strokeWidth={2.5} aria-hidden="true" />}
+                  {ing.name}
+                </button>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
 

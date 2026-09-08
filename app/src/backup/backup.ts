@@ -35,11 +35,14 @@ export function backupFileName(at: Date = new Date()): string {
 
 /** Build a complete backup archive. */
 export async function exportBackup(database: HomecookDB = db): Promise<Blob> {
-  const [recipes, ingredients, cookLogs, photos] = await Promise.all([
+  const [recipes, ingredients, cookLogs, photos, pantryItems, mealPlans, shoppingItems] = await Promise.all([
     database.recipes.toArray(),
     database.ingredients.toArray(),
     database.cookLogs.toArray(),
     database.photos.toArray(),
+    database.pantryItems.toArray(),
+    database.mealPlans.toArray(),
+    database.shoppingItems.toArray(),
   ]);
 
   const files: Record<string, Uint8Array> = {};
@@ -62,11 +65,17 @@ export async function exportBackup(database: HomecookDB = db): Promise<Blob> {
       ingredients: ingredients.length,
       cookLogs: cookLogs.length,
       photos: photos.length,
+      pantryItems: pantryItems.length,
+      mealPlans: mealPlans.length,
+      shoppingItems: shoppingItems.length,
     },
     recipes,
     ingredients,
     cookLogs,
     photos: photoEntries,
+    pantryItems,
+    mealPlans,
+    shoppingItems,
   };
 
   files[MANIFEST_NAME] = new TextEncoder().encode(JSON.stringify(manifest, null, 2));
@@ -152,22 +161,33 @@ export async function restoreBackup(
 
   await database.transaction(
     'rw',
-    database.recipes,
-    database.ingredients,
-    database.cookLogs,
-    database.photos,
+    [
+      database.recipes,
+      database.ingredients,
+      database.cookLogs,
+      database.photos,
+      database.pantryItems,
+      database.mealPlans,
+      database.shoppingItems,
+    ],
     async () => {
       await Promise.all([
         database.recipes.clear(),
         database.ingredients.clear(),
         database.cookLogs.clear(),
         database.photos.clear(),
+        database.pantryItems.clear(),
+        database.mealPlans.clear(),
+        database.shoppingItems.clear(),
       ]);
 
       await database.ingredients.bulkAdd(manifest.ingredients);
       await database.recipes.bulkAdd(manifest.recipes);
       await database.cookLogs.bulkAdd(manifest.cookLogs);
       if (photos.length > 0) await database.photos.bulkAdd(photos);
+      if (manifest.pantryItems.length > 0) await database.pantryItems.bulkAdd(manifest.pantryItems);
+      if (manifest.mealPlans.length > 0) await database.mealPlans.bulkAdd(manifest.mealPlans);
+      if (manifest.shoppingItems.length > 0) await database.shoppingItems.bulkAdd(manifest.shoppingItems);
     },
   );
 

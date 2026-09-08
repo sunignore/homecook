@@ -94,3 +94,49 @@ export interface CookLog {
   createdAt: number;
   updatedAt: number;
 }
+
+// ── M3 ──────────────────────────────────────────────────────────────────────
+
+export type PantryLocation = 'fridge' | 'freezer' | 'pantry';
+
+export interface PantryItem {
+  id: string;
+  ingredientId: string;
+  qty: number;
+  unit: string;
+  boughtAt?: number;
+  /** Drives expiry-first ordering and the Home "expiring soon" warning. */
+  expiresAt?: number;
+  location: PantryLocation;
+  createdAt: number;
+  updatedAt: number;
+}
+
+// ── M4 ──────────────────────────────────────────────────────────────────────
+
+export type MealSlot = 'breakfast' | 'lunch' | 'dinner';
+
+export interface MealPlan {
+  id: string;
+  /** 'YYYY-MM-DD' local date, not a timestamp — a plan is for a calendar day,
+   *  not an instant, so it must not shift with the reader's timezone. */
+  date: string;
+  slot: MealSlot;
+  recipeId?: string;
+  /** "eat out", "leftovers" — a slot doesn't have to resolve to a recipe. */
+  freeText?: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface ShoppingItem {
+  id: string;
+  ingredientId: string;
+  qty: number;
+  unit: string;
+  checked: boolean;
+  /** Set when generated from the plan; undefined for a manually added item. */
+  sourceMealPlanId?: string;
+  createdAt: number;
+  updatedAt: number;
+}

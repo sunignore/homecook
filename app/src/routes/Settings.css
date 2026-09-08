@@ -42,3 +42,18 @@
 .hint code {
   font-family: var(--hc-font-mono);
 }
+
+.staple-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--hc-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.staple-chip {
+  min-height: var(--hc-target-min);
+  border: none;
+  cursor: pointer;
+}

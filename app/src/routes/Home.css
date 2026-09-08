@@ -1,0 +1,71 @@
+/* Home — the M3 suggestion surface (docs/product-brief.md §5).
+   Token values only (docs/design.md §7). */
+
+.empty {
+  align-items: flex-start;
+}
+
+.suggestion-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hc-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.suggestion-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hc-space-3);
+  padding: var(--hc-space-4);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--hc-radius-lg);
+  text-decoration: none;
+  color: var(--foreground);
+  min-height: var(--hc-target-min);
+}
+
+.suggestion-title {
+  font-size: var(--hc-size-lead);
+  font-weight: 700;
+}
+
+.suggestion-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hc-space-3);
+  padding: var(--hc-space-3);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--hc-radius-md);
+  text-decoration: none;
+  color: var(--foreground);
+  min-height: var(--hc-target-min);
+}
+
+.expiring-list,
+.today-plan-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hc-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.expiring-row,
+.today-plan-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hc-space-3);
+}
+
+h2 svg {
+  vertical-align: -3px;
+  margin-inline-end: var(--hc-space-1);
+}
