@@ -49,7 +49,7 @@ beforeAll(async () => {
     grant usage on schema public,auth,storage to authenticated,service_role;
     grant select on storage.objects to authenticated;
   `);
-  for (const filename of ['202609080001_household.sql','202609080002_push_queue.sql','202609080003_cloud_foundation.sql']) {
+  for (const filename of ['202609080001_household.sql','202609080002_push_queue.sql','202609080003_cloud_foundation.sql','202609080004_code_auth.sql']) {
     await pg.exec(readFileSync(resolve(process.cwd(),'../supabase/migrations',filename),'utf8'));
   }
 }, 30000);
@@ -213,5 +213,52 @@ describe('cloud reference and transaction regressions', () => {
     const fresh = crypto.randomUUID();
     await pg.query("insert into public.cloud_ingredients(household_id,id,name,category,default_unit) values($1,$2,'Salt','other','g')",[home,fresh]);
     await expect(pg.query('update public.cloud_ingredients set household_id=$1 where id=$2',[otherHome,fresh])).rejects.toThrow('Household cannot change');
+  });
+});
+
+describe('permanent code authentication support', () => {
+  it('initializes once and provisions the wife without exposing either table to browsers', async () => {
+    await owner();
+    await pg.exec('truncate public.cloud_households cascade');
+    const initialized = await pg.query<{ id: string }>(
+      "select public.cloud_initialize_household($1,'Our kitchen') as id", [h],
+    );
+    expect(initialized.rows[0]!.id).toMatch(/^[0-9a-f-]{36}$/);
+    expect((await pg.query<{ id: string }>(
+      "select public.cloud_initialize_household($1,'Retry') as id", [h],
+    )).rows[0]!.id).toBe(initialized.rows[0]!.id);
+    await expect(pg.query("select public.cloud_initialize_household($1,'Again')", [w]))
+      .rejects.toThrow('Already initialized');
+    await pg.query('select public.cloud_provision_wife($1,$2)', [h,w]);
+    expect((await pg.query('select role from public.cloud_members order by role')).rows)
+      .toEqual([{ role: 'husband' }, { role: 'wife' }]);
+    await asUser(h, null);
+    await expect(pg.query('select * from public.cloud_auth_setup')).rejects.toThrow();
+    await expect(pg.query('select public.cloud_initialize_household($1,$2)', [h,'Browser']))
+      .rejects.toThrow();
+  });
+
+  it('rate limits repeated attempts and can clear only the exact fingerprint and action', async () => {
+    await owner();
+    const fingerprint = 'a'.repeat(64);
+    const results = [];
+    for (let count = 0; count < 6; count++) {
+      results.push((await pg.query<{ allowed: boolean }>(
+        'select public.cloud_auth_attempt($1,$2,5) as allowed', [fingerprint,'login:wife'],
+      )).rows[0]!.allowed);
+    }
+    expect(results).toEqual([true,true,true,true,true,false]);
+    await pg.query('select public.cloud_auth_reset_limit($1,$2)', [fingerprint,'login:wife']);
+    expect((await pg.query<{ allowed: boolean }>(
+      'select public.cloud_auth_attempt($1,$2,5) as allowed', [fingerprint,'login:wife'],
+    )).rows[0]!.allowed).toBe(true);
+  });
+
+  it('returns role context only through a registered current session', async () => {
+    await asUser(h,sid);
+    expect((await pg.query<{ value: unknown }>('select public.cloud_auth_context() as value')).rows[0]!.value)
+      .toMatchObject({ householdId: home, role: 'husband', name: 'Our kitchen', accessVersion: 1 });
+    await asUser(h,null);
+    expect((await pg.query<{ value: unknown }>('select public.cloud_auth_context() as value')).rows[0]!.value).toBeNull();
   });
 });

@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased] 2026-09-07
 
 ### Changed
+- **[2026-09-08]**: Added the staged permanent role-and-code authentication flow: one-time household bootstrap, server-keyed code derivation, rate-limited login, enrolled multi-device sessions, husband-only credential rotation and explicit role-wide revocation, plus an accessible account screen. Existing content still uses legacy storage until the repository stages land.
 - **[2026-09-08]**: Added the full-cloud storage foundation: permanent-member session gates, versioned household tables, private photo policies and database boundary tests. The existing client remains on legacy storage until the code-login and repository stages are implemented.
 - **[2026-09-08]**: Documentation now distinguishes implemented M1–M4 functionality from pending real-use validation, records the shipped v3 data schema, fixes the variant-context link, and replaces scaffold placeholders with the actual app stack and commands.
 
@@ -103,6 +104,7 @@ All notable changes to this project will be documented in this file.
 - **[2026-09-07]**: `k-kosis` skill (Korean Statistical Information Service / KOSIS OpenAPI) — promoted from `co-pitch/skills/k-kosis`, registered in `skills/SKILLS.md` (scope: common, l2_propagate).
 
 ### Changed
+- **[2026-09-08]**: Added the staged permanent role-and-code authentication flow: one-time household bootstrap, server-keyed code derivation, rate-limited login, enrolled multi-device sessions, husband-only credential rotation and explicit role-wide revocation, plus an accessible account screen. Existing content still uses legacy storage until the repository stages land.
 - **[2026-09-08]**: Added the full-cloud storage foundation: permanent-member session gates, versioned household tables, private photo policies and database boundary tests. The existing client remains on legacy storage until the code-login and repository stages are implemented.
 ### Fixed
 - **[2026-09-07]**: `agents/pm.md` — removed the 5-line `lifecycle:` frontmatter block (L0-only field, forbidden in L1 by `audit.ts`'s L1 pm.md check). Pre-existing defect left on main since #605; surfaced as a blocking FAIL during the co-hr promotion gate and cleared under that PR (single-root-PR pattern per #605 precedent). Restores ADR-0033 extends-pattern conformance; no other content touched.
