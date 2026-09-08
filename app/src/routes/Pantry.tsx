@@ -207,7 +207,11 @@ export default function Pantry() {
                     inputMode="decimal"
                     onChange={e => {
                       const n = Number(e.target.value);
-                      if (Number.isFinite(n)) void updatePantryItem(item.id, { qty: n });
+                      // Clamped: a negative quantity is meaningless and would
+                      // subtract from the shopping list's pantry total.
+                      if (Number.isFinite(n)) {
+                        void updatePantryItem(item.id, { qty: Math.max(0, n) });
+                      }
                     }}
                     aria-label={`${ingredient?.name ?? '재료'} 수량`}
                   />

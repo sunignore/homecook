@@ -62,10 +62,21 @@ export async function generateShoppingList(
     database.shoppingItems,
     async () => {
       const plans = dates.length === 0 ? [] : await database.mealPlans.where('date').anyOf(dates as string[]).toArray();
-      const recipeIds = [...new Set(plans.filter(p => p.recipeId).map(p => p.recipeId!))];
-      const recipes = (await database.recipes.bulkGet(recipeIds)).filter(r => r !== undefined);
+      const planned = plans.filter(p => p.recipeId);
+      const byId = new Map(
+        (await database.recipes.bulkGet([...new Set(planned.map(p => p.recipeId!))]))
+          .filter(r => r !== undefined)
+          .map(r => [r.id, r]),
+      );
 
-      const needed = aggregateNeeded(recipes);
+      // One entry PER PLANNED MEAL, not per distinct recipe: cooking the same
+      // dish twice in a week needs two batches of its ingredients. Deduplicating
+      // here would shop for one and send the user back to the shop mid-week.
+      const recipesToShopFor = planned
+        .map(p => byId.get(p.recipeId!))
+        .filter(r => r !== undefined);
+
+      const needed = aggregateNeeded(recipesToShopFor);
 
       const pantryItems = await database.pantryItems.toArray();
       const pantryByKey = new Map<string, number>();

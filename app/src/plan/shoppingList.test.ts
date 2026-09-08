@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { HomecookDB, saveRecipe } from '../db/db';
-import { addPantryItem } from '../pantry/pantry';
+import { addPantryItem, restockPantry } from '../pantry/pantry';
 import { setMealPlan } from './mealPlan';
 import {
   GENERATED_MARKER,
@@ -202,5 +202,42 @@ describe('sortShoppingItems', () => {
       { id: 'b', ingredientId: 'y', qty: 1, unit: 'ea', checked: false, createdAt: 2, updatedAt: 2 },
     ];
     expect(sortShoppingItems(items).map(i => i.id)).toEqual(['b', 'a']);
+  });
+});
+
+describe('a recipe planned more than once', () => {
+  it('shops for every planned meal, not every distinct recipe', async () => {
+    // Cooking the same dish twice in a week needs two batches. Deduplicating by
+    // recipe id would buy one and send the shopper back mid-week.
+    await saveRecipe(recipeInput('r-1', [{ ingredientId: 'kimchi', qty: 300, unit: 'g' }]), db);
+    await setMealPlan({ date: '2026-09-08', slot: 'dinner', recipeId: 'r-1' }, db);
+    await setMealPlan({ date: '2026-09-10', slot: 'dinner', recipeId: 'r-1' }, db);
+
+    await generateShoppingList(['2026-09-08', '2026-09-10'], db);
+
+    const items = await db.shoppingItems.toArray();
+    expect(items).toHaveLength(1);
+    expect(items[0]!.qty).toBe(600);
+  });
+
+  it('counts two slots on the same day separately', async () => {
+    await saveRecipe(recipeInput('r-1', [{ ingredientId: 'rice', qty: 1, unit: 'ea' }]), db);
+    await setMealPlan({ date: '2026-09-08', slot: 'lunch', recipeId: 'r-1' }, db);
+    await setMealPlan({ date: '2026-09-08', slot: 'dinner', recipeId: 'r-1' }, db);
+
+    await generateShoppingList(['2026-09-08'], db);
+
+    expect((await db.shoppingItems.toArray())[0]!.qty).toBe(2);
+  });
+
+  it('still subtracts pantry stock once from the doubled total', async () => {
+    await saveRecipe(recipeInput('r-1', [{ ingredientId: 'kimchi', qty: 300, unit: 'g' }]), db);
+    await restockPantry({ ingredientId: 'kimchi', qty: 200, unit: 'g', location: 'fridge' }, db);
+    await setMealPlan({ date: '2026-09-08', slot: 'dinner', recipeId: 'r-1' }, db);
+    await setMealPlan({ date: '2026-09-10', slot: 'lunch', recipeId: 'r-1' }, db);
+
+    await generateShoppingList(['2026-09-08', '2026-09-10'], db);
+
+    expect((await db.shoppingItems.toArray())[0]!.qty).toBe(400);
   });
 });

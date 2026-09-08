@@ -152,3 +152,37 @@ describe('oneIngredientAway', () => {
     expect(oneIngredientAway(ranked).map(s => s.recipe.id)).toEqual(['one-away']);
   });
 });
+
+describe('stock that has been used up', () => {
+  const kimchi: Ingredient = {
+    id: 'i-kimchi', name: '김치', aliases: [], category: 'vegetable',
+    defaultUnit: 'g', isStaple: false, createdAt: 0, updatedAt: 0,
+  };
+  const recipe: Recipe = {
+    id: 'r-1', title: '김치찌개', servings: 2, tags: [],
+    ingredients: [{ ingredientId: 'i-kimchi', qty: 300, unit: 'g', optional: false }],
+    ingredientIds: ['i-kimchi'], steps: [], createdAt: 0, updatedAt: 0,
+  };
+  const stock = (qty: number): PantryItem => ({
+    id: 'p-1', ingredientId: 'i-kimchi', qty, unit: 'g',
+    location: 'fridge', createdAt: 0, updatedAt: 0,
+  });
+
+  it('does not count a row edited down to zero as having the ingredient', () => {
+    // The row survives so its expiry and location are not lost; only a positive
+    // quantity means the ingredient is actually available.
+    const [suggestion] = suggestRecipes([recipe], [kimchi], [stock(0)], []);
+    expect(suggestion!.score).toBe(0);
+    expect(suggestion!.missing).toEqual(['i-kimchi']);
+  });
+
+  it('counts a positive quantity as available', () => {
+    const [suggestion] = suggestRecipes([recipe], [kimchi], [stock(1)], []);
+    expect(suggestion!.score).toBe(1);
+  });
+
+  it('sums quantities across rows for the same ingredient', () => {
+    const split = [{ ...stock(0), id: 'p-1' }, { ...stock(2), id: 'p-2' }];
+    expect(suggestRecipes([recipe], [kimchi], split, [])[0]!.score).toBe(1);
+  });
+});

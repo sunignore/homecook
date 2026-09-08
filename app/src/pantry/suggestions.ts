@@ -41,13 +41,20 @@ export function scoreRecipe(
   // score 5/6.
   const scored = required.filter(id => !ingredientsById.get(id)?.isStaple);
 
-  const present = scored.filter(id => (pantryByIngredient.get(id)?.length ?? 0) > 0);
-  const missing = scored.filter(id => !(pantryByIngredient.get(id)?.length ?? 0));
+  // Having stock means a positive quantity, not merely a surviving row. A row
+  // edited down to 0 as it is used up would otherwise keep scoring the recipe
+  // as fully cookable, which is exactly when the answer must change.
+  const inStock = (id: string) =>
+    (pantryByIngredient.get(id) ?? []).reduce((sum, item) => sum + item.qty, 0) > 0;
+
+  const present = scored.filter(inStock);
+  const missing = scored.filter(id => !inStock(id));
 
   const score = scored.length === 0 ? 1 : present.length / scored.length;
 
   const expiries = scored
     .flatMap(id => pantryByIngredient.get(id) ?? [])
+    .filter(p => p.qty > 0)
     .map(p => p.expiresAt)
     .filter((e): e is number => e !== undefined);
 
