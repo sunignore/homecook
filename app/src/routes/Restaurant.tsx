@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
+import { AlertTriangle } from 'lucide-react';
 import { db } from '../db/db';
+import { inAppBrowser } from '../household/environment';
 import { exportBackup, backupFileName } from '../backup/backup';
 import { command, configured, invite, join, localDish, migratePlans, recoverRecipe, refresh, server, subscribePush } from '../household/client';
 import { snapshotSchema, slotLabels, statusLabels, type Command, type Order } from '../household/contracts';
@@ -50,7 +52,11 @@ export default function Restaurant() {
     if (found) history.replaceState(null, '', location.pathname);
     return found;
   });
-  const [invitation, setInvitation] = useState('');
+  const [inviteToken, setInviteToken] = useState('');
+  // A messenger's in-app browser has its own storage, so pairing here would bind
+  // a throwaway session and burn the single-use token, leaving the real app
+  // unpaired with a code that no longer works. Refuse rather than fail silently.
+  const [embedded] = useState(() => inAppBrowser());
   const [name, setName] = useState('');
   const [date, setDate] = useState(today);
   const [slot, setSlot] = useState<MealSlot>('dinner');
@@ -96,6 +102,15 @@ export default function Restaurant() {
     catch (e) { setError(e instanceof Error ? e.message : '처리하지 못했습니다. 다시 시도해주세요.'); }
     finally { running.current = false; setBusy(false); }
   }
+  function copy(text: string, success: string) {
+    void run(async () => {
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {
+        throw new Error('복사하지 못했습니다. 칸을 길게 눌러 직접 복사해주세요.');
+      }
+    }, success);
+  }
   async function send(body: Command) {
     const signature = JSON.stringify(body);
     const key = pending.current.get(signature) ?? crypto.randomUUID();
@@ -125,16 +140,41 @@ export default function Restaurant() {
       <label className="field">역할<select value={role} onChange={e => setRole(e.target.value as typeof role)}><option value="husband">남편 · 셰프</option><option value="wife">아내 · 손님</option></select></label>
       <label className="field">처음 한 번, 초대 코드<input value={token} onChange={e => setToken(e.target.value)} required autoComplete="off" spellCheck={false} /></label>
       <p className="muted">초대 링크를 열거나 전달받은 코드를 붙여넣어주세요. 연결 후에는 역할을 기억합니다.</p>
-      <button className="btn-primary" disabled={busy}>우리 식당 연결하기</button>
+      {embedded && <>
+        <p className="banner banner-warn" role="alert">
+          <AlertTriangle size={20} strokeWidth={2} aria-hidden="true" />
+          <span>
+            지금 {embedded} 안의 브라우저에서 열렸습니다. 여기서 연결하면 홈 화면 앱과 저장 공간이 달라
+            초대 코드만 사라지고, 알림도 받을 수 없습니다. 아래에서 코드를 복사한 뒤 홈 화면에 추가한
+            homecook 앱을 열어 붙여넣어 주세요.
+          </span>
+        </p>
+        {token.trim() && <button type="button" className="btn-quiet" onClick={() => copy(token.trim(), '초대 코드를 복사했습니다. 홈 화면 앱에서 붙여넣어 주세요.')}>초대 코드 복사</button>}
+      </>}
+      <button className="btn-primary" disabled={busy || Boolean(embedded)}>우리 식당 연결하기</button>
     </form> : <>
       <section className="card stack">
         <h2>{chef ? '셰프의 주방' : '오늘의 손님'}</h2>
         <details><summary>기기 연결·알림 설정</summary><div className="stack">
           <p>아이폰 공유 메뉴에서 ‘홈 화면에 추가’한 뒤 앱을 열고 알림을 허용해주세요.</p>
-          <button className="btn-quiet" disabled={busy} onClick={() => void run(subscribePush, '알림을 등록했습니다. 잠시 후 테스트 알림을 확인해주세요.')}>알림 켜고 테스트하기</button>
+          {embedded && <p className="banner banner-warn" role="alert">
+            <AlertTriangle size={20} strokeWidth={2} aria-hidden="true" />
+            <span>{embedded} 안의 브라우저에서는 알림을 등록할 수 없습니다. 홈 화면에 추가한 앱에서 열어주세요.</span>
+          </p>}
+          <button className="btn-quiet" disabled={busy || Boolean(embedded)} onClick={() => void run(subscribePush, '알림을 등록했습니다. 잠시 후 테스트 알림을 확인해주세요.')}>알림 켜고 테스트하기</button>
           <p className="muted">초대는 30분 동안 한 번 사용할 수 있어요. 새 기기가 연결되면 상대 역할의 이전 기기 연결을 해제합니다.</p>
-          <button className="btn-quiet" disabled={busy} onClick={() => void run(async () => setInvitation(location.origin + '/restaurant#invite=' + await invite()), '초대 링크를 만들었습니다.')}>상대방 초대·기기 교체</button>
-          {invitation && <label className="field">상대방에게 전달할 초대 링크<input readOnly value={invitation} onFocus={e => e.target.select()} /></label>}
+          <button className="btn-quiet" disabled={busy} onClick={() => void run(async () => setInviteToken(await invite()), '초대 코드를 만들었습니다.')}>상대방 초대·기기 교체</button>
+          {inviteToken && <div className="stack">
+            <label className="field">상대방에게 전달할 초대 코드<input readOnly value={inviteToken} onFocus={e => e.target.select()} /></label>
+            <button type="button" className="btn-quiet" onClick={() => copy(inviteToken, '초대 코드를 복사했습니다.')}>초대 코드 복사</button>
+            {/* The link is the trap: opening it inside a messenger consumes the
+                token in that app's isolated webview, so the code is what gets
+                shared and the link stays behind a disclosure. */}
+            <p className="muted">메신저로는 링크 대신 이 코드를 보내주세요. 상대방이 메신저 안에서 링크를 열면 코드가 그대로 사라져 다시 발급해야 합니다.</p>
+            <details><summary>초대 링크도 보기</summary>
+              <input readOnly value={location.origin + '/restaurant#invite=' + inviteToken} onFocus={e => e.target.select()} />
+            </details>
+          </div>}
           {chef && <form className="stack" onSubmit={e => { e.preventDefault(); void run(() => send({ action: 'name', name }), '식당 이름을 바꿨습니다.'); }}>
             <label className="field">식당 이름<input value={name} placeholder={snapshot.name} maxLength={80} onChange={e => setName(e.target.value)} required /></label><button className="btn-quiet" disabled={busy}>이름 저장</button>
           </form>}

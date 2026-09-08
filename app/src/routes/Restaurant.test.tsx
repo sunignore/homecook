@@ -20,7 +20,17 @@ beforeEach(() => {
     menu: [first, second].map((id, i) => ({ id, version: 1, available: true, recipe: { id, title: i ? 'Side dish' : 'Soup', servings: 2, ingredients: [], steps: [], tags: [] } })),
   } };
 });
-afterEach(() => { cleanup(); });
+// The in-app-browser guard reads navigator.userAgent, so a test that overrides
+// it must put the real one back or it silently changes every later test.
+const realUserAgent = Object.getOwnPropertyDescriptor(Navigator.prototype, 'userAgent');
+function setUserAgent(value: string) {
+  Object.defineProperty(navigator, 'userAgent', { value, configurable: true });
+}
+afterEach(() => {
+  cleanup();
+  delete (navigator as { userAgent?: unknown }).userAgent;
+  if (realUserAgent) Object.defineProperty(Navigator.prototype, 'userAgent', realUserAgent);
+});
 function open() { render(<MemoryRouter><Restaurant /></MemoryRouter>); }
 it('submits multiple dishes with two diners and leaves chef controls out of the customer form', async () => {
   open();
@@ -57,4 +67,29 @@ it('requires a chef comment before enabling whole-order rejection', async () => 
   fireEvent.change(screen.getByLabelText('셰프의 의견 (거절·취소 시 필수)'), { target: { value: '오늘은 재료가 없어요' } });
   fireEvent.click(screen.getByRole('button', { name: '전체 거절' }));
   await waitFor(() => expect(mock.command).toHaveBeenCalledWith(expect.objectContaining({ action: 'reject', comment: '오늘은 재료가 없어요' }), expect.any(String)));
+});
+
+// Pairing inside a messenger's webview binds a throwaway session and consumes
+// the single-use invite token, so the real Home Screen app is left unpaired
+// with a code that no longer works. The form has to refuse before that happens.
+it('refuses to pair inside a messenger in-app browser and offers the code instead', async () => {
+  setUserAgent(
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 KAKAOTALK 10.3.0',
+  );
+  mock.state.snapshot = null;
+  open();
+  expect(await screen.findByRole('alert')).toHaveTextContent('카카오톡');
+  expect(screen.getByRole('button', { name: '우리 식당 연결하기' })).toBeDisabled();
+  fireEvent.change(screen.getByLabelText('처음 한 번, 초대 코드'), { target: { value: 'a'.repeat(64) } });
+  expect(screen.getByRole('button', { name: '초대 코드 복사' })).toBeEnabled();
+});
+
+it('allows pairing in an ordinary mobile browser', async () => {
+  setUserAgent(
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Version/17.0 Mobile/15E148 Safari/604.1',
+  );
+  mock.state.snapshot = null;
+  open();
+  expect(screen.getByRole('button', { name: '우리 식당 연결하기' })).toBeEnabled();
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 });
