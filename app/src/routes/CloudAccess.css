@@ -1,0 +1,55 @@
+.cloud-access {
+  max-width: 36rem;
+  margin-inline: auto;
+}
+
+.role-picker {
+  display: flex;
+  gap: var(--hc-space-4);
+  margin: 0;
+  padding: var(--hc-space-3);
+  border: 1px solid var(--card-border);
+  border-radius: var(--hc-radius-md);
+}
+
+.role-picker legend {
+  padding-inline: var(--hc-space-2);
+  font-weight: 700;
+}
+
+.role-picker label,
+.persistence-choice {
+  display: flex;
+  align-items: center;
+  gap: var(--hc-space-2);
+  min-height: var(--hc-target-min);
+}
+
+.persistence-choice small {
+  display: block;
+  color: var(--muted-foreground);
+}
+
+.field-help {
+  font-size: var(--hc-size-caption);
+}
+
+.cloud-actions {
+  flex-wrap: wrap;
+}
+
+.access-revoke {
+  padding-top: var(--hc-space-3);
+  border-top: 1px solid var(--card-border);
+}
+
+.code-help-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hc-space-2);
+}
+
+.code-help-row .btn-quiet {
+  flex: none;
+}

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
+import { Link } from 'react-router-dom';
 import { AlertTriangle, Check, Download, HardDrive, ShieldCheck, Upload } from 'lucide-react';
 import { db } from '../db/db';
 import {
@@ -136,6 +137,15 @@ export default function Settings() {
   return (
     <div className="stack">
       <h1>설정</h1>
+
+      <section className="card stack" aria-labelledby="cloud-account-heading">
+        <h2 id="cloud-account-heading">우리집 계정 준비</h2>
+        <p className="muted">
+          전체 데이터를 두 사람의 기기에 공유하기 위한 고정 코드 로그인 화면입니다.
+          현재 데이터 저장 방식은 최종 전환 전까지 그대로 유지됩니다.
+        </p>
+        <Link className="btn-quiet" to="/cloud-access">우리집 계정 열기</Link>
+      </section>
 
       <section className="card stack" aria-labelledby="storage-heading">
         <h2 id="storage-heading">저장소</h2>

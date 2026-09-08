@@ -11,8 +11,8 @@ There is no existing user data to migrate. Device pairing tests are on hold.
 
 | Stage | Deliverable | State |
 | --- | --- | --- |
-| 1 | ADR, cloud tables, private photo boundary, session enrollment and revocation foundation | Implemented locally; PR review pending |
-| 2 | Bootstrap, code gateway, credential management, accessible login UI | Pending |
+| 1 | ADR, cloud tables, private photo boundary, session enrollment and revocation foundation | Merged in PR #13 |
+| 2 | Bootstrap, code gateway, credential management, accessible login UI | Implemented locally; PR review pending |
 | 3 | Recipes, ingredients and photos through server repositories | Pending |
 | 4 | Pantry, meal plans, shopping and cooking history | Pending |
 | 5 | Both-role order actions, frozen receipts, cooking handoff | Pending |

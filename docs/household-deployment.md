@@ -6,8 +6,8 @@ requires a Supabase project, a stable HTTPS origin, and two physical iPhones.
 ## Database and first connection
 
 1. Create a free Supabase project and enable Anonymous Sign-Ins in Auth.
-2. Apply both files in `supabase/migrations/` in timestamp order using the SQL
-   editor or Supabase CLI. Tables are private; do not disable row level security.
+2. For legacy device pairing, apply migrations 001 and 002 in timestamp order using
+   the SQL editor or Supabase CLI. Tables are private; do not disable row level security.
 3. Run `supabase/setup-household.sql` once. Privately copy the returned 30-minute
    token. On the chef's Home Screen app, open Home > restaurant, choose Husband
    and paste the token. This creates no email/password flow.
@@ -28,6 +28,38 @@ Set `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (the public anon key), and
 `VITE_VAPID_PUBLIC_KEY` on the existing Vercel app, whose build root is `app/`.
 See `app/.env.sample`. Rebuild after changing these variables.
 Never put the service-role key, private VAPID key, or worker secret in VITE variables.
+
+## Permanent code authentication staging
+
+This flow is implemented separately from legacy anonymous pairing and does not switch
+application data to the cloud by itself.
+
+1. Apply migrations 003 and 004 in timestamp order. Migration 004 is retry-safe for
+   the same partially provisioned Husband identity and refuses a second household.
+2. In Supabase Edge Function secrets, set HOMECOOK_AUTH_PEPPER to a stable random
+   value of at least 32 characters, HOMECOOK_BOOTSTRAP_SECRET to a separate random
+   value of at least 24 characters, and HOMECOOK_APP_ORIGINS to the exact allowed
+   HTTPS origins separated by commas. Do not prefix any of these with VITE_.
+3. Deploy cloud-auth. JWT verification is disabled at the platform edge because
+   bootstrap and login begin without a JWT. The function enforces exact origins,
+   rate limits attempts, and independently verifies a live enrolled Husband session
+   for credential administration.
+4. Open /cloud-access, enter the one-time bootstrap secret and choose the Husband
+   code. After login, set the Wife code in the administrator section. Codes are
+   12–64 characters and must contain letters and numbers.
+5. Rotate the bootstrap secret after initialization and retain the authentication
+   pepper in the private deployment secret store. Losing or changing the pepper
+   invalidates code derivation and requires an administrator credential reset.
+
+The UI offers persistent login for a personal phone and memory-only login for a
+shared device. Code rotation affects future logins. The separate role-wide logout
+increments the access version so enrolled sessions immediately lose subsequent
+database and protected-photo access. Neither operation can erase data already
+downloaded by a device.
+
+The browser receives only the existing public Supabase URL and publishable key.
+Never expose SUPABASE_SERVICE_ROLE_KEY, either authentication secret, internal
+derived passwords, or Auth account identifiers through Vercel client variables.
 
 ## Push delivery
 
@@ -99,10 +131,10 @@ bundle is therefore unchanged by household mode for the offline cooking path
 (design.md E6). The Supabase chunk is still precached so the installed app stays
 complete offline.
 
-Local verification on 2026-09-08: 248 tests across 16 files passed; TypeScript and
-the production PWA build passed; the Edge Function passed Deno checking; the
-workspace audit passed after regenerating the ADR relationship graph. The entry
-bundle measured 459 KB with the shared-server chunk at 228 KB loaded on demand.
+Local verification on 2026-09-08: 273 tests across 19 files passed; TypeScript and
+the production PWA build passed; both the code-auth Edge Function and its strict
+request contracts passed Deno checking. Hosted authentication remains a deployment
+checkpoint because no production secret or migration was applied from this computer.
 Existing memory-file line-ending warnings remain.
 
 Sources: [Anonymous Sign-Ins](https://supabase.com/docs/guides/auth/auth-anonymous),

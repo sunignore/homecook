@@ -12,10 +12,10 @@ import Settings from './routes/Settings';
 import CookMode from './routes/CookMode';
 import './App.css';
 
-// Split out of the main bundle: this screen is the only one that talks to the
-// shared server, and @supabase/supabase-js must not be part of what the kitchen
-// downloads to cook offline (docs/design.md E6, principle 6).
+// Split shared-server screens out of the main bundle. @supabase/supabase-js must
+// not be part of what the kitchen downloads to cook offline (docs/design.md E6).
 const Restaurant = lazy(() => import('./routes/Restaurant'));
+const CloudAccess = lazy(() => import('./routes/CloudAccess'));
 
 // Bottom tabs, one column, max 640px (docs/design.md layout decision). Cook mode
 // will be a sibling full-screen route OUTSIDE this shell so the tab bar cannot be
@@ -51,6 +51,14 @@ function Shell() {
             element={
               <Suspense fallback={<p>식당을 여는 중…</p>}>
                 <Restaurant />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/cloud-access"
+            element={
+              <Suspense fallback={<p>계정 화면을 여는 중…</p>}>
+                <CloudAccess />
               </Suspense>
             }
           />
