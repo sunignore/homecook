@@ -84,3 +84,4 @@ Catalog table above — not skill references and not yet resolved as graph edges
 | `adr:0001` | adr | — | — | — |
 | `adr:0002` | adr | — | — | — |
 | `adr:0003` | adr | — | — | — |
+| `adr:0004` | adr | — | — | — |

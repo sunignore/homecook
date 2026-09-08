@@ -1,6 +1,6 @@
 ---
 sync_version: 1
-content_hash: afcdf11dade9d1d3dff74aad7d02a606dd729a5aaa5b6fc46007dd9e343f6182
+content_hash: 5a4f6576d031f9a34c8e39faf7c1d8ea0967e793a8d9bc84b1c6d11393541c8d
 ---
 
 # homecook
@@ -8,6 +8,11 @@ content_hash: afcdf11dade9d1d3dff74aad7d02a606dd729a5aaa5b6fc46007dd9e343f6182
 > **Language**: **English** · [한국어](README_ko.md)
 > **Status**: M1–M4 implemented · real-use validation in progress
 > A personal home-cooking app — recipes, pantry, meal plan and a kitchen-friendly cook mode, running offline on your phone.
+
+> **Cloud rollout**: Shared orders are available in the existing app. Full shared
+> storage and permanent code login are being introduced in stages; this PR adds
+> the database foundation only. The description below reflects the original local
+> app. See [the rollout plan](docs/cloud-rollout.md) for current scope.
 
 ## What this is
 
