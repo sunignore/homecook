@@ -8,6 +8,10 @@ import Dexie, { type Table } from 'dexie';
 import type { CookLog, Ingredient, MealPlan, PantryItem, Recipe, ShoppingItem, StoredPhoto } from './types';
 
 export class HomecookDB extends Dexie {
+  householdCache!: Table<{ id: string; snapshot: unknown; syncedAt: number }, string>;
+  householdOriginals!: Table<{ id: string; plan: MealPlan }, string>;
+  householdPhotos!: Table<{ id: string; bytes: ArrayBuffer; type: string }, string>;
+  householdRecovery!: Table<{ id: string; snapshot: unknown }, string>;
   ingredients!: Table<Ingredient, string>;
   recipes!: Table<Recipe, string>;
   photos!: Table<StoredPhoto, string>;
@@ -41,6 +45,12 @@ export class HomecookDB extends Dexie {
     this.version(3).stores({
       mealPlans: 'id, date, slot, recipeId',
       shoppingItems: 'id, ingredientId, checked, sourceMealPlanId',
+    });
+    this.version(4).stores({
+      householdCache: 'id',
+      householdOriginals: 'id',
+      householdPhotos: 'id',
+      householdRecovery: 'id',
     });
   }
 }

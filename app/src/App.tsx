@@ -1,6 +1,7 @@
 import { NavLink, Navigate, Route, Routes } from 'react-router-dom';
 import { BookOpen, CalendarDays, ChefHat, Refrigerator, Settings as SettingsIcon } from 'lucide-react';
 import Home from './routes/Home';
+import Restaurant from './routes/Restaurant';
 import Recipes from './routes/Recipes';
 import RecipeImport from './routes/RecipeImport';
 import RecipeDetail from './routes/RecipeDetail';
@@ -28,6 +29,7 @@ export default function App() {
       {/* Cook mode sits OUTSIDE the shell: no tab bar to hit by accident with a
           wet hand mid-recipe (docs/design.md E2/E4). */}
       <Route path="/recipes/:id/cook" element={<CookMode />} />
+      <Route path="/orders/:orderId/cook/:id" element={<CookMode />} />
       <Route path="*" element={<Shell />} />
     </Routes>
   );
@@ -39,6 +41,7 @@ function Shell() {
       <main className="app-main">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/restaurant" element={<Restaurant />} />
           <Route path="/recipes" element={<Recipes />} />
           <Route path="/recipes/import" element={<RecipeImport />} />
           <Route path="/recipes/:id" element={<RecipeDetail />} />

@@ -133,6 +133,10 @@ export interface PantryItem {
 export type MealSlot = 'breakfast' | 'lunch' | 'dinner';
 
 export interface MealPlan {
+  householdId?: string;
+  sourceOrderId?: string;
+  dishes?: import('../household/contracts').Dish[];
+  diners?: number;
   id: string;
   /** 'YYYY-MM-DD' local date, not a timestamp — a plan is for a calendar day,
    *  not an instant, so it must not shift with the reader's timezone. */

@@ -15,6 +15,8 @@ import {
 } from '../plan/shoppingList';
 import type { MealPlan, MealSlot } from '../db/types';
 import './Plan.css';
+import { Link } from 'react-router-dom';
+import { useHousehold } from '../household/useHousehold';
 
 const SLOT_LABELS: Record<MealSlot, string> = {
   breakfast: '아침',
@@ -24,6 +26,7 @@ const SLOT_LABELS: Record<MealSlot, string> = {
 const SLOTS: MealSlot[] = ['breakfast', 'lunch', 'dinner'];
 
 export default function Plan() {
+  const { snapshot, error: sharedError } = useHousehold();
   const [weekStart, setWeekStart] = useState(() => startOfWeek(todayLocalDateString()));
   const [qty, setQty] = useState('');
   const [unit, setUnit] = useState('');
@@ -47,11 +50,15 @@ export default function Plan() {
   }
 
   async function handleRecipeChange(date: string, slot: MealSlot, recipeId: string) {
-    if (recipeId === '') await clearMealPlan(date, slot);
-    else await setMealPlan({ date, slot, recipeId });
+    try {
+      if (recipeId === '') await clearMealPlan(date, slot);
+      else await setMealPlan({ date, slot, recipeId });
+      setAddError(null);
+    } catch (e) { setAddError(e instanceof Error ? e.message : '식단을 저장하지 못했습니다.'); }
   }
 
   async function handleFreeTextCommit(date: string, slot: MealSlot, value: string) {
+    try {
     const trimmed = value.trim();
     const entry = entryFor(date, slot);
     if (!trimmed) {
@@ -59,12 +66,15 @@ export default function Plan() {
       return;
     }
     await setMealPlan({ date, slot, freeText: trimmed });
+    } catch (e) { setAddError(e instanceof Error ? e.message : '식단을 저장하지 못했습니다.'); }
   }
 
   async function handleGenerate() {
     setGenerating(true);
     try {
       await generateShoppingList(dates);
+    } catch (e) {
+      setAddError(e instanceof Error ? e.message : '장보기 목록을 만들지 못했습니다.');
     } finally {
       setGenerating(false);
     }
@@ -87,6 +97,8 @@ export default function Plan() {
   return (
     <div className="stack">
       <h1>계획</h1>
+      {sharedError && <p role="alert">{sharedError}</p>}
+      {snapshot && <p className="muted">공유 식단입니다. 변경 후 장보기 목록을 다시 만들어주세요. <Link to="/restaurant">주문함</Link></p>}
 
       <section className="stack" aria-labelledby="calendar-heading">
         <div className="page-head">
@@ -119,10 +131,19 @@ export default function Plan() {
             <h3 className="plan-day-heading">{formatDayLabel(date)}</h3>
             {SLOTS.map(slot => {
               const entry = entryFor(date, slot);
+              if (entry?.dishes?.length || entry?.sourceOrderId) return (
+                <div className="card stack" key={slot}>
+                  <strong>{SLOT_LABELS[slot]} · {entry.diners}인</strong>
+                  <span>{entry.dishes?.map(d => d.title).join(' · ')}</span>
+                  {entry.sourceOrderId ? <Link to={'/restaurant#order-' + entry.sourceOrderId}>주문서 보기</Link>
+                    : snapshot?.role === 'husband' && <button className="btn-quiet" onClick={() => void handleRecipeChange(date, slot, '')}>식단 지우기</button>}
+                </div>
+              );
               return (
                 <div className="plan-slot-row" key={slot}>
                   <span className="plan-slot-label muted">{SLOT_LABELS[slot]}</span>
                   <select
+                    disabled={snapshot?.role === 'wife'}
                     className="plan-slot-select"
                     value={entry?.recipeId ?? ''}
                     onChange={e => void handleRecipeChange(date, slot, e.target.value)}
@@ -141,7 +162,7 @@ export default function Plan() {
                     defaultValue={entry?.recipeId ? '' : entry?.freeText ?? ''}
                     onBlur={e => void handleFreeTextCommit(date, slot, e.target.value)}
                     placeholder="외식, 남은 음식…"
-                    disabled={Boolean(entry?.recipeId)}
+                    disabled={Boolean(entry?.recipeId) || snapshot?.role === 'wife'}
                     aria-label={`${formatDayLabel(date)} ${SLOT_LABELS[slot]} 직접 입력`}
                   />
                 </div>

@@ -74,4 +74,5 @@ tests/.temp/
 <!-- /WORKSPACE-MANAGED -->
 
 # TypeScript incremental build info (build artifact)
+!app/.env.sample
 *.tsbuildinfo

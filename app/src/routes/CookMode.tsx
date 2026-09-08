@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Check, ChevronLeft, ChevronRight, Pause, Play, Plus, RotateCcw, X } from 'lucide-react';
 import { db } from '../db/db';
+import { cachedSnapshot } from '../household/client';
 import {
   clampStep,
   clearSession,
@@ -30,10 +31,16 @@ import './CookMode.css';
 // hand must not navigate away mid-recipe (docs/design.md E2/E4).
 
 export default function CookMode() {
-  const { id } = useParams<{ id: string }>();
+  const { id, orderId } = useParams<{ id: string; orderId: string }>();
   const navigate = useNavigate();
 
-  const recipe = useLiveQuery(() => (id ? db.recipes.get(id) : undefined), [id]);
+  const recipe = useLiveQuery(async () => {
+    if (!id) return null;
+    if (!orderId) return await db.recipes.get(id) ?? null;
+    const shared = await cachedSnapshot();
+    const dish = shared?.orders.find(o => o.id === orderId)?.items.find(i => i.id === id);
+    return dish ? { ...dish, id: orderId + ':' + id } : null;
+  }, [id, orderId]);
   const [session, setSession] = useState<CookSession | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const [alerted, setAlerted] = useState<string[]>([]);
@@ -44,7 +51,9 @@ export default function CookMode() {
   // Restore the session for this recipe, or start one.
   useEffect(() => {
     if (!recipe) return;
-    setSession(prev => prev ?? loadSession(recipe.id) ?? newSession(recipe.id, recipe.steps));
+    setSession(prev => prev?.recipeId === recipe.id ? prev : loadSession(recipe.id) ?? newSession(recipe.id, recipe.steps));
+    alarmedIds.current.clear();
+    setAlerted([]);
     void primeAlarm();
   }, [recipe]);
 
@@ -120,12 +129,12 @@ export default function CookMode() {
 
   function handleExit() {
     // Leaving is deliberate: timers are still running and the position is kept.
-    navigate(`/recipes/${recipe!.id}`);
+    navigate(orderId ? '/restaurant#order-' + orderId : `/recipes/${recipe!.id}`);
   }
 
   function handleFinish() {
-    clearSession();
-    navigate(`/recipes/${recipe!.id}?logged=1`);
+    clearSession(recipe!.id);
+    navigate(orderId ? '/restaurant#order-' + orderId : `/recipes/${recipe!.id}?logged=1`);
   }
 
   const stepTimer = session.timers.find(t => t.stepIndex === stepIndex);

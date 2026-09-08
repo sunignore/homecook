@@ -7,6 +7,8 @@
 // than no backup, because the user believed they were covered.
 
 import type { CookLog, Ingredient, MealPlan, PantryItem, Recipe, ShoppingItem } from '../db/types';
+import { z } from 'zod';
+import { dishSchema, snapshotSchema, type Snapshot } from '../household/contracts';
 
 /** Identifies the file as ours, so an unrelated zip fails fast and clearly. */
 export const BACKUP_FORMAT = 'homecook-backup';
@@ -16,7 +18,7 @@ export const BACKUP_VERSION = 1;
 
 /** Dexie schema version the data was exported from (docs/data-model.md §3).
  *  v2 added pantryItems (M3), v3 added mealPlans + shoppingItems (M4). */
-export const CURRENT_SCHEMA_VERSION = 3;
+export const CURRENT_SCHEMA_VERSION = 4;
 
 export const MANIFEST_NAME = 'data.json';
 export const PHOTO_DIR = 'photos';
@@ -30,6 +32,9 @@ export interface PhotoEntry {
 }
 
 export interface BackupManifest {
+  households?: Snapshot[];
+  householdPhotos?: { path: string; file: string; type: string }[];
+  originalPlans?: MealPlan[];
   format: typeof BACKUP_FORMAT;
   version: number;
   schemaVersion: number;
@@ -121,6 +126,14 @@ export function validateManifest(value: unknown): BackupManifest {
   }
 
   const manifest = value as unknown as BackupManifest;
+  if (manifest.households !== undefined) z.array(snapshotSchema).max(100).parse(manifest.households);
+  if (manifest.householdPhotos !== undefined) z.array(z.object({
+    path: z.string().max(300), file: z.string().regex(/^household-photos\/[a-f0-9]+$/), type: z.string().max(100),
+  }).strict()).max(10000).parse(manifest.householdPhotos);
+  for (const plan of manifest.mealPlans ?? []) {
+    if (plan.dishes !== undefined) z.array(dishSchema).max(20).parse(plan.dishes);
+    if (plan.diners !== undefined) z.number().positive().max(20).parse(plan.diners);
+  }
   return {
     ...manifest,
     pantryItems: manifest.pantryItems ?? [],

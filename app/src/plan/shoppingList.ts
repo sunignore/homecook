@@ -76,6 +76,18 @@ export async function generateShoppingList(
         .map(p => byId.get(p.recipeId!))
         .filter(r => r !== undefined);
 
+      for (const plan of plans.filter(p => p.dishes?.length)) {
+        for (const dish of plan.dishes!) {
+          const scale = (plan.diners ?? dish.servings) / dish.servings;
+          if (!Number.isFinite(scale) || scale <= 0) throw new Error('식단 인분을 확인해주세요.');
+          recipesToShopFor.push({
+            ...dish, ingredientIds: dish.ingredients.map(i => i.ingredientId),
+            createdAt: 0, updatedAt: 0,
+            ingredients: dish.ingredients.map(i => ({ ...i, qty: i.qty === null ? null : i.qty * scale })),
+          });
+        }
+      }
+
       const needed = aggregateNeeded(recipesToShopFor);
 
       const pantryItems = await database.pantryItems.toArray();
