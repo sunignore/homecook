@@ -1,7 +1,7 @@
 # Product Brief — homecook
 
 ## Status
-Active — M1 in progress
+Active — M1–M4 implemented; real-use validation in progress
 
 ## Created
 2026-09-07
@@ -44,15 +44,19 @@ Pantry ──▶ What should I cook? ──▶ Cook mode ──▶ Cook log
 
 ## 3. Milestones
 
-The loop is closed one arc at a time. Each milestone must survive a week of real
-use before the next one starts.
+The implementation has reached M4. Product validation still proceeds one arc at
+a time: each milestone must survive a week of real use before it is considered
+validated or further scope is added.
 
-| # | Milestone | Scope | Done when |
-|---|-----------|-------|-----------|
-| **M1** | Recipe archive + cook log | Recipe CRUD, paste-to-parse import, tags, search, photo, cook log (rating, memo, tweaks), backup/restore | 15 real recipes are in it, and a cook log entry exists |
-| **M2** | Cook mode | Full-screen step view, multiple timers, Wake Lock, large type and touch targets, hands-off advance, finishes into the cook log | A full meal was cooked from the phone screen |
-| **M3** | Pantry + suggestions | Ingredient inventory (quantity, expiry, storage location), expiry-first ordering, "can cook now" scoring | The pantry tab decided a dinner |
-| **M4** | Meal plan + shopping | 7-day calendar (breakfast/lunch/dinner), plan → shopping list (aggregate ingredients, subtract pantry stock), check off → restock pantry | The list was open in the shop |
+| # | Milestone | Scope | Implementation | Validated when |
+|---|-----------|-------|----------------|----------------|
+| **M1** | Recipe archive + cook log | Recipe CRUD, paste-to-parse import, tags, search, photo, cook log (rating, memo, tweaks), backup/restore | Complete | 15 real recipes are in it, and a cook log entry exists |
+| **M2** | Cook mode | Full-screen step view, multiple timers, Wake Lock, large type and touch targets, hands-off advance, finishes into the cook log | Complete | A full meal was cooked from the phone screen |
+| **M3** | Pantry + suggestions | Ingredient inventory (quantity, expiry, storage location), expiry-first ordering, "can cook now" scoring | Complete | The pantry tab decided a dinner |
+| **M4** | Meal plan + shopping | 7-day calendar (breakfast/lunch/dinner), plan → shopping list (aggregate ingredients, subtract pantry stock), check off → restock pantry | Complete | The list was open in the shop |
+
+The implementation column records what exists in the app. The validation column
+records the product outcome and remains pending until observed in real use.
 
 **Why M2 before M3**: cook mode is the cheapest to build and the most immediately
 felt. It needs nothing beyond M1 data. M3 and M4 both depend on ingredient

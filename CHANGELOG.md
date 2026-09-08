@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased] 2026-09-07
 
+### Changed
+- **[2026-09-08]**: Documentation now distinguishes implemented M1–M4 functionality from pending real-use validation, records the shipped v3 data schema, fixes the variant-context link, and replaces scaffold placeholders with the actual app stack and commands.
+
 ### Fixed
 - **[2026-09-08]**: Saving a recipe with a photo could fail outright with `UnknownError: Error preparing Blob/File data to be stored in object store`. Chromium persists an IndexedDB `Blob` through a separate file-backed path that can fail on its own while the rest of the database is healthy — and because backup restore wrote photos the same way, a user hitting this could neither save nor restore. Photos are now stored as an `ArrayBuffer` plus a MIME type, which travels the ordinary structured-clone path, and a `Blob` is rebuilt on read (`src/photos/photoBytes.ts`). Rows written in the old shape are read in place rather than migrated: an `upgrade()` that throws leaves the database unopenable, and with no server copy (ADR-0001) that is the one failure the user cannot recover from. Verified in Chromium against real IndexedDB — a 2400x1600 source stored, read back and decoded at 1280x853, and a legacy blob row still readable and exportable.
 - **[2026-09-08]**: A photo the browser refused to store was reported as a failed save, even though the recipe itself had already been written. On the import screen this was destructive: pressing save again imported the whole recipe a second time. Both screens now save the recipe, continue to it, and say plainly that only the photo did not store.

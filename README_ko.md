@@ -1,6 +1,6 @@
 ---
 sync_version: 1
-translated_from_hash: 065e029af43e32c599aac88550b5a92183ce11646eba881215fc8a8ba9e53cbd
+translated_from_hash: afcdf11dade9d1d3dff74aad7d02a606dd729a5aaa5b6fc46007dd9e343f6182
 lang: ko
 lang_reason: source-material
 ---
@@ -8,7 +8,7 @@ lang_reason: source-material
 # homecook
 
 > **언어**: [English](README.md) · **한국어**
-> **상태**: 🚧 M1 진행 중
+> **상태**: M1–M4 구현 완료 · 실제 사용 검증 진행 중
 > 나 혼자 쓰는 홈쿠킹 앱 — 레시피, 냉장고, 식단, 그리고 주방에서 쓰기 좋은 조리 모드. 오프라인으로 동작합니다.
 
 ## 이게 뭔가요
@@ -26,10 +26,14 @@ homecook은 1인용 오프라인 우선 PWA입니다. 계정도, 서버도, 공�
 
 | 마일스톤 | 범위 | 상태 |
 |---------|------|------|
-| **M1** | 레시피 아카이브, 붙여넣기 가져오기, 요리 기록, 백업 | 🚧 진행 중 |
-| **M2** | 조리 모드 — 풀스크린 단계, 타이머, 화면 꺼짐 방지 | ✅ 구현 |
-| **M3** | 냉장고 재고와 "지금 만들 수 있는 요리" 추천 | 예정 |
-| **M4** | 주간 식단 → 장보기 리스트 | 예정 |
+| **M1** | 레시피 아카이브, 붙여넣기 가져오기, 요리 기록, 백업 | 구현 완료 · 사용 목표 검증 전 |
+| **M2** | 조리 모드 — 풀스크린 단계, 타이머, 화면 꺼짐 방지 | 구현 완료 · 실제 조리 검증 전 |
+| **M3** | 냉장고 재고와 "지금 만들 수 있는 요리" 추천 | 구현 완료 · 저녁 메뉴 결정 검증 전 |
+| **M4** | 주간 식단 → 장보기 리스트 | 구현 완료 · 매장 사용 검증 전 |
+
+구현 상태와 제품 검증 상태는 별도로 관리합니다. 코드가 완성됐더라도
+[`docs/product-brief.md`](docs/product-brief.md)의 실제 사용 기준을 충족해야 해당 마일스톤이
+검증된 것으로 봅니다.
 
 문제 정의와 범위는 [`docs/product-brief.md`](docs/product-brief.md), 스키마는
 [`docs/data-model.md`](docs/data-model.md), 디자인 시스템은
@@ -154,4 +158,4 @@ PM, Architect, Designer, Code Writer, Test Runner, Security Monitor, Stack Setup
 
 ---
 
-*최근 업데이트: 2026-08-09*
+*최근 업데이트: 2026-09-08*
