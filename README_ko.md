@@ -1,6 +1,6 @@
 ---
 sync_version: 1
-translated_from_hash: afcdf11dade9d1d3dff74aad7d02a606dd729a5aaa5b6fc46007dd9e343f6182
+translated_from_hash: 5a4f6576d031f9a34c8e39faf7c1d8ea0967e793a8d9bc84b1c6d11393541c8d
 lang: ko
 lang_reason: source-material
 ---
@@ -10,6 +10,11 @@ lang_reason: source-material
 > **언어**: [English](README.md) · **한국어**
 > **상태**: M1–M4 구현 완료 · 실제 사용 검증 진행 중
 > 나 혼자 쓰는 홈쿠킹 앱 — 레시피, 냉장고, 식단, 그리고 주방에서 쓰기 좋은 조리 모드. 오프라인으로 동작합니다.
+
+> **클라우드 전환**: 기존 앱에는 공유 주문 기능이 있습니다. 전체 데이터 공유와
+> 고정 코드 로그인은 단계적으로 도입하며, 이번 PR은 데이터베이스 기반만 추가합니다.
+> 아래 설명은 최초 로컬 앱 기준입니다. 현재 범위는
+> [전환 계획](docs/ko/cloud-rollout.md)을 확인하세요.
 
 ## 이게 뭔가요
 

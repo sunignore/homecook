@@ -76,3 +76,6 @@ tests/.temp/
 # TypeScript incremental build info (build artifact)
 !app/.env.sample
 *.tsbuildinfo
+
+# Supabase CLI machine-local state
+supabase/.temp/

@@ -8,6 +8,7 @@ This directory contains all project documentation and architecture artifacts.
 |------|---------|
 | `context.md` | Single source of truth for all AI tools - architecture, tech stack, coding guidelines, multi-agent workflow |
 | `adr/` | Architecture Decision Records - significant technical decisions with rationale |
+| [Cloud rollout](cloud-rollout.md) | Approved full-cloud/code-login roadmap and implementation status |
 | [Household ordering plan](household-ordering-plan.md) | Planned extension: couple pairing, menu orders, existing meal-plan integration and iPhone notifications |
 | [Korean plan summary](ko/household-ordering-plan.md) | User-facing summary of confirmed requirements and implementation defaults |
 | [Household deployment](household-deployment.md) | Supabase setup, private pairing, push scheduling, recovery and physical iPhone checks |
