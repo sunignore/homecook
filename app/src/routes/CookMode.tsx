@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Check, ChevronLeft, ChevronRight, Pause, Play, Plus, RotateCcw, X } from 'lucide-react';
 import { db } from '../db/db';
-import { cachedSnapshot } from '../household/client';
+import { cachedSnapshot } from '../household/cache';
 import {
   clampStep,
   clearSession,

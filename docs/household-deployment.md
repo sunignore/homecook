@@ -14,9 +14,15 @@ requires a Supabase project, a stable HTTPS origin, and two physical iPhones.
 4. Download the existing local backup and confirm it has been saved. Publish the
    selected recipes, then run the existing-plan connection action before accepting
    orders. A duplicate slot is reported rather than overwritten.
-5. Generate the partner invitation in restaurant settings. The wife opens the same
-   deployed app, chooses Wife and pastes the code. An invitation can also be opened
-   as a link; its token is removed from the navigation history after reading.
+5. Generate the partner invitation in restaurant settings and send the **code**,
+   not the link. A link tapped inside a messenger opens in that app's own webview,
+   whose storage is separate from the Home Screen app: pairing there consumes the
+   single-use token and leaves the installed app unpaired with a code that no
+   longer works, and push cannot be registered there either. The screen detects a
+   known in-app browser, refuses to pair, and offers the code to copy instead. The
+   wife opens the installed app, chooses Wife and pastes it. A link still works
+   when opened in Safari or Chrome; its token is removed from the navigation
+   history after reading.
 
 Set `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (the public anon key), and
 `VITE_VAPID_PUBLIC_KEY` on the existing Vercel app, whose build root is `app/`.
@@ -86,10 +92,18 @@ The local test suite covers PostgreSQL business rules with PGlite and Supabase
 schema shims. It does not establish hosted RLS/storage configuration, Edge runtime
 delivery, or physical iPhone behavior. Those checks must be recorded after deployment.
 
-Local verification on 2026-09-08: 243 tests across 15 files passed; TypeScript and
+The shared-server code is split out of the main bundle: `/restaurant` is a lazy
+route, and every other screen reaches household state through `household/cache`
+and `household/config`, which do not import `@supabase/supabase-js`. The entry
+bundle is therefore unchanged by household mode for the offline cooking path
+(design.md E6). The Supabase chunk is still precached so the installed app stays
+complete offline.
+
+Local verification on 2026-09-08: 248 tests across 16 files passed; TypeScript and
 the production PWA build passed; the Edge Function passed Deno checking; the
-workspace audit passed after regenerating the ADR relationship graph. Existing
-memory-file line-ending warnings and a JavaScript bundle-size advisory remain.
+workspace audit passed after regenerating the ADR relationship graph. The entry
+bundle measured 459 KB with the shared-server chunk at 228 KB loaded on demand.
+Existing memory-file line-ending warnings remain.
 
 Sources: [Anonymous Sign-Ins](https://supabase.com/docs/guides/auth/auth-anonymous),
 [scheduled functions](https://supabase.com/docs/guides/functions/schedule-functions),

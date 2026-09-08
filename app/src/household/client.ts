@@ -3,7 +3,15 @@ import { z } from 'zod';
 import { db, saveRecipe } from '../db/db';
 import type { MealPlan, Recipe } from '../db/types';
 import { photoBlob } from '../photos/photoBytes';
+import { cachedSnapshot, setActiveUser } from './cache';
+import { configured } from './config';
 import { commandSchema, dishSchema, snapshotSchema, type Command, type Dish, type Snapshot } from './contracts';
+
+// Re-exported so existing call sites keep one import, while screens that only
+// read shared state can import ./cache and ./config directly and stay clear of
+// the Supabase bundle.
+export { cachedSnapshot } from './cache';
+export { configured } from './config';
 
 let client: SupabaseClient | undefined;
 let sharedQueue: Promise<unknown> = Promise.resolve();
@@ -12,7 +20,6 @@ function sequential<T>(task: () => Promise<T>): Promise<T> {
   sharedQueue = next.catch(() => undefined);
   return next;
 }
-export const configured = Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
 export function server(): SupabaseClient {
   if (!configured) throw new Error('공유 서버 연결 설정이 필요합니다.');
   if (!client) {
@@ -35,13 +42,6 @@ async function rpc(name: string, args?: Record<string, unknown>): Promise<unknow
   if (error) throw new Error(error.message);
   return data;
 }
-export async function cachedSnapshot(): Promise<Snapshot | null> {
-  if (!configured) return null;
-  const { data } = await server().auth.getSession();
-  if (!data.session) return null;
-  const row = await db.householdCache.get(data.session.user.id);
-  return row ? snapshotSchema.parse(row.snapshot) : null;
-}
 export async function saveSnapshot(raw: unknown): Promise<Snapshot | null> {
   const user = await identity();
   if (raw === null) {
@@ -51,6 +51,7 @@ export async function saveSnapshot(raw: unknown): Promise<Snapshot | null> {
       await db.mealPlans.filter(p => p.householdId === old.householdId).delete();
     }
     await db.householdCache.delete(user);
+    setActiveUser(null);
     window.dispatchEvent(new Event('household-updated'));
     return null;
   }
@@ -79,6 +80,9 @@ export async function saveSnapshot(raw: unknown): Promise<Snapshot | null> {
       });
     }
   });
+  // Names the identity ./cache should read, so a snapshot survives a reload
+  // without anyone having to construct the Supabase client to find it.
+  setActiveUser(user);
   window.dispatchEvent(new Event('household-updated'));
   return snapshot;
 }

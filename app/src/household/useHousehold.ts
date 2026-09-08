@@ -1,6 +1,15 @@
 import { useEffect, useState } from 'react';
-import { cachedSnapshot, configured, refresh } from './client';
+import { cachedSnapshot } from './cache';
+import { configured } from './config';
 import type { Snapshot } from './contracts';
+
+// ./client is imported on demand rather than at module scope: Home and Plan use
+// this hook, and a static import would pull @supabase/supabase-js into the
+// bundle every screen loads, including the offline cooking path (design.md E6).
+async function syncFromServer(): Promise<Snapshot | null> {
+  const { refresh } = await import('./client');
+  return refresh();
+}
 
 export function useHousehold() {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
@@ -16,7 +25,7 @@ export function useHousehold() {
     const sync = async () => {
       if (inFlight || document.visibilityState === 'hidden') return;
       inFlight = true;
-      try { const data = await refresh(); if (active) { setSnapshot(data); setError(''); } }
+      try { const data = await syncFromServer(); if (active) { setSnapshot(data); setError(''); } }
       catch (e) { if (active) setError(e instanceof Error ? e.message : '연결을 확인해주세요.'); }
       finally { inFlight = false; if (active) setLoading(false); }
     };

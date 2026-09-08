@@ -10,7 +10,6 @@ import { db, HomecookDB } from '../db/db';
 import type { Photo } from '../db/types';
 import { photoPayload } from '../photos/photoBytes';
 import { snapshotSchema } from '../household/contracts';
-import { server } from '../household/client';
 import {
   BACKUP_FORMAT,
   BACKUP_VERSION,
@@ -59,6 +58,9 @@ export async function exportBackup(database: HomecookDB = db): Promise<Blob> {
   for (const path of paths) {
     let photo = await database.householdPhotos.get(path);
     if (!photo && database === db) {
+      // Loaded here so an ordinary local backup never pulls in the shared-server
+      // bundle; only an archive containing an uncached shared photo needs it.
+      const { server } = await import('../household/client');
       const result = await server().storage.from('household-photos').download(path);
       if (result.error) throw new BackupFormatError('공유 사진을 백업하지 못했습니다. 인터넷 연결 후 다시 시도해주세요.');
       photo = { id: path, bytes: await result.data.arrayBuffer(), type: result.data.type };

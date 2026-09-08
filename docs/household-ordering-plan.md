@@ -46,8 +46,10 @@ They can be adjusted during implementation without changing the core flow.
 4. He shares an expiring, single-use invite link or QR with his wife. The app
    provides this sharing action; no invitation is sent automatically.
 5. Wife opens homecook from her iPhone Home Screen, selects Wife, and consumes
-   the invitation. If the link opened in Safari, support pasting the invitation
-   into the installed app; do not assume the two contexts share a session.
+   the invitation. Do not assume two browsing contexts share a session: prefer
+   sending the code over the link, support pasting it into the installed app, and
+   refuse pairing outright inside a messenger's in-app browser, which would
+   otherwise consume the single-use token in storage the installed app cannot see.
 6. Each device requests notification permission after an explicit button tap,
    then receives a test notification. Normal subsequent visits restore its role.
 7. Wife selects date, meal, dishes, diners, and an optional request, then reviews

@@ -4,13 +4,26 @@
 
 import { db, HomecookDB } from '../db/db';
 import type { MealPlan, MealSlot } from '../db/types';
-import { writeSharedPlan } from '../household/client';
+import { cachedSnapshot } from '../household/cache';
+import { configured } from '../household/config';
 
 export interface MealPlanDraft {
   date: string;
   slot: MealSlot;
   recipeId?: string;
   freeText?: string;
+}
+
+// Writing a plan is the ordinary local path, so the shared-server bundle is
+// fetched only once this device is actually paired — a local-only user never
+// downloads it (design.md E6). Both checks come from Supabase-free modules.
+async function shareWrite(
+  draft: Pick<MealPlan, 'date' | 'slot' | 'recipeId' | 'freeText'>,
+  clear = false,
+): Promise<boolean> {
+  if (!configured || !(await cachedSnapshot())) return false;
+  const { writeSharedPlan } = await import('../household/client');
+  return writeSharedPlan(draft, clear);
 }
 
 async function findEntry(
@@ -26,7 +39,7 @@ async function findEntry(
 }
 
 export async function setMealPlan(draft: MealPlanDraft, database: HomecookDB = db): Promise<string> {
-  if (database === db && await writeSharedPlan(draft)) return 'shared';
+  if (database === db && await shareWrite(draft)) return 'shared';
   const now = Date.now();
 
   return database.transaction('rw', database.mealPlans, async () => {
@@ -60,7 +73,7 @@ export async function clearMealPlan(
   slot: MealSlot,
   database: HomecookDB = db,
 ): Promise<void> {
-  if (database === db && await writeSharedPlan({ date, slot }, true)) return;
+  if (database === db && await shareWrite({ date, slot }, true)) return;
   await database.mealPlans
     .where('date')
     .equals(date)
