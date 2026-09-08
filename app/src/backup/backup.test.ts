@@ -4,6 +4,7 @@ import { HomecookDB, saveRecipe } from '../db/db';
 import type { CookLog, Ingredient, Recipe } from '../db/types';
 import { backupFileName, exportBackup, readBackup, restoreBackup } from './backup';
 import { BACKUP_FORMAT, BackupFormatError, MANIFEST_NAME } from './format';
+import { photoBlob } from '../photos/photoBytes';
 
 // Export is the only durability story this app has (ADR-0001). The test that
 // matters is the round trip through a full wipe — anything less does not prove
@@ -179,9 +180,9 @@ describe('restore round trip', () => {
     await wipe();
     await restoreBackup(await readBackup(blob), db);
 
-    const photo = await db.photos.get('p-1');
-    expect(photo?.blob.type).toBe('image/png');
-    expect(new Uint8Array(await photo!.blob.arrayBuffer())).toEqual(
+    const restored = photoBlob(await db.photos.get('p-1'));
+    expect(restored?.type).toBe('image/png');
+    expect(new Uint8Array(await restored!.arrayBuffer())).toEqual(
       new Uint8Array([137, 80, 78, 71, 1, 2, 3]),
     );
   });

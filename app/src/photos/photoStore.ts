@@ -2,7 +2,7 @@
 // never blocks saving the recipe itself.
 
 import { db, HomecookDB } from '../db/db';
-import type { Photo } from '../db/types';
+import { toPhotoRecord } from './photoBytes';
 
 /**
  * Store a prepared image and return its id.
@@ -11,7 +11,7 @@ import type { Photo } from '../db/types';
  * does not resize, so nothing can accidentally persist a 5 MB original.
  */
 export async function putPhoto(blob: Blob, database: HomecookDB = db): Promise<string> {
-  const photo: Photo = { id: crypto.randomUUID(), blob, createdAt: Date.now() };
+  const photo = await toPhotoRecord(blob, crypto.randomUUID());
   await database.photos.add(photo);
   return photo.id;
 }
@@ -30,15 +30,19 @@ export async function replaceRecipePhoto(
 ): Promise<string | undefined> {
   let newId: string | undefined;
 
+  // Encoded before the transaction opens: reading a Blob is not an IndexedDB
+  // operation, and awaiting one inside a transaction lets it auto-commit.
+  const record = blob ? await toPhotoRecord(blob, crypto.randomUUID()) : null;
+
   await database.transaction('rw', database.recipes, database.photos, async () => {
     const recipe = await database.recipes.get(recipeId);
     if (!recipe) return;
 
     if (recipe.photoId) await database.photos.delete(recipe.photoId);
 
-    if (blob) {
-      newId = crypto.randomUUID();
-      await database.photos.add({ id: newId, blob, createdAt: Date.now() });
+    if (record) {
+      newId = record.id;
+      await database.photos.add(record);
     }
 
     await database.recipes.update(recipeId, { photoId: newId, updatedAt: Date.now() });

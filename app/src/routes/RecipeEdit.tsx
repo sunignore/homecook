@@ -4,6 +4,7 @@ import { db } from '../db/db';
 import RecipeDraftForm, { type DraftStep } from '../components/RecipeDraftForm';
 import { updateRecipe, type DraftIngredient } from '../import/importRecipe';
 import { replaceRecipePhoto } from '../photos/photoStore';
+import { photoBlob } from '../photos/photoBytes';
 
 // Editing reuses the import correction form: both are the same job, and the
 // ingredient rows must go through the same resolution so a rename here can land
@@ -33,7 +34,7 @@ export default function RecipeEdit() {
     }));
 
     const steps: DraftStep[] = recipe.steps.map((s, idx) => ({ ...s, key: `s${idx}` }));
-    const photo = recipe.photoId ? ((await db.photos.get(recipe.photoId))?.blob ?? null) : null;
+    const photo = recipe.photoId ? photoBlob(await db.photos.get(recipe.photoId)) : null;
 
     return { recipe, draftRows, steps, photo };
   }, [id]);
@@ -68,8 +69,18 @@ export default function RecipeEdit() {
         onSubmit={async (draft, nextPhoto) => {
           await updateRecipe(recipe.id, draft);
           // undefined means the photo was not touched; null clears it.
-          if (nextPhoto !== undefined) await replaceRecipePhoto(recipe.id, nextPhoto);
-          navigate(`/recipes/${recipe.id}`);
+          // The recipe is already written, so a photo the browser refuses to
+          // store must not present itself as a failed save — that stranded the
+          // user on the form with their edits apparently lost.
+          let photoFailed = false;
+          if (nextPhoto !== undefined) {
+            try {
+              await replaceRecipePhoto(recipe.id, nextPhoto);
+            } catch {
+              photoFailed = true;
+            }
+          }
+          navigate(`/recipes/${recipe.id}`, { state: { photoFailed } });
         }}
       />
     </div>

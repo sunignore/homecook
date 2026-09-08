@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { ArrowLeft, ChefHat, Flame, Pencil, Star, Timer, Trash2 } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, ChefHat, Flame, Pencil, Star, Timer, Trash2 } from 'lucide-react';
 import { db } from '../db/db';
 import { addCookLog, cookLogsFor, deleteCookLog, deleteRecipeWithLogs, summarize } from '../cooklog/cookLog';
 import type { Rating } from '../db/types';
@@ -24,6 +24,12 @@ const RATINGS: Rating[] = [1, 2, 3, 4, 5];
 export default function RecipeDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+
+  // Saving arrives here with photoFailed when the browser refused to store the
+  // image. The recipe itself is saved, so this is a notice rather than an
+  // error — but it has to be said, or the user believes they have a photo.
+  const location = useLocation();
+  const photoFailed = (location.state as { photoFailed?: boolean } | null)?.photoFailed === true;
 
   // Cook mode finishes by returning here with ?logged=1, which opens the log
   // form straight away — the tweak is remembered now or not at all.
@@ -119,6 +125,16 @@ export default function RecipeDetail() {
           </>
         )}
       </p>
+
+      {photoFailed && (
+        <p className="banner banner-warn" role="status">
+          <AlertTriangle size={20} strokeWidth={2} aria-hidden="true" />
+          <span>
+            레시피는 저장했지만 사진은 저장하지 못했습니다. 브라우저가 이미지를 저장소에
+            쓰지 못했습니다 — 편집에서 다시 시도해 보세요.
+          </span>
+        </p>
+      )}
 
       <RecipePhoto photoId={recipe.photoId} alt={`${recipe.title} 사진`} className="detail-photo" />
 

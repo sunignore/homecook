@@ -22,8 +22,14 @@ There is no server-side schema.
    multi-entry index through an array of objects, so `Recipe` carries a flat
    `ingredientIds: string[]` alongside `ingredients`. It is derived on every
    write by `saveRecipe()` — see §4.
-4. **Photos are Blobs in a separate table.** Never inline in the recipe record —
-   `useLiveQuery` over the recipe list must not deserialize image bytes.
+4. **Photos are raw bytes in a separate table.** Never inline in the recipe
+   record — `useLiveQuery` over the recipe list must not deserialize image
+   bytes. Stored as `ArrayBuffer`, not `Blob`: Chromium persists an IndexedDB
+   Blob through a separate file-backed path that can fail on its own
+   (`UnknownError: Error preparing Blob/File data to be stored in object
+   store`), which made saving a recipe with a photo — and restoring a backup —
+   impossible while the rest of the database was healthy. Bytes travel the
+   ordinary structured-clone path. A `Blob` is rebuilt on read.
 5. **Every table has `createdAt` / `updatedAt`.** Backup/restore and future conflict
    handling both need them, and they are free to add now.
 
@@ -76,7 +82,17 @@ interface RecipeStep {
 
 interface Photo {
   id: string;
-  blob: Blob;               // resized to max 1280px on the long edge before store
+  bytes: ArrayBuffer;       // resized to max 1280px on the long edge before store
+  type: string;             // MIME type, so a read rebuilds the Blob without guessing
+  createdAt: number;
+}
+
+// Rows written before the ArrayBuffer switch. Read in place, never migrated:
+// an upgrade() that throws leaves the database unopenable, and with no server
+// copy (ADR-0001) that is the one failure the user cannot recover from.
+interface LegacyPhoto {
+  id: string;
+  blob: Blob;
   createdAt: number;
 }
 

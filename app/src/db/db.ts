@@ -5,12 +5,12 @@
 // shoppingItems (M4).
 
 import Dexie, { type Table } from 'dexie';
-import type { CookLog, Ingredient, MealPlan, PantryItem, Photo, Recipe, ShoppingItem } from './types';
+import type { CookLog, Ingredient, MealPlan, PantryItem, Recipe, ShoppingItem, StoredPhoto } from './types';
 
 export class HomecookDB extends Dexie {
   ingredients!: Table<Ingredient, string>;
   recipes!: Table<Recipe, string>;
-  photos!: Table<Photo, string>;
+  photos!: Table<StoredPhoto, string>;
   cookLogs!: Table<CookLog, string>;
   pantryItems!: Table<PantryItem, string>;
   mealPlans!: Table<MealPlan, string>;
