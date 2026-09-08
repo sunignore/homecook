@@ -43,13 +43,13 @@ beforeAll(async () => {
       select nullif(current_setting('request.jwt.claims',true),'')::jsonb $$;
     create schema storage;
     create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
-    create table storage.objects(id uuid,name text,bucket_id text);
+    create table storage.objects(id uuid,name text,bucket_id text,metadata jsonb not null default '{}');
     alter table storage.objects enable row level security;
     create function storage.foldername(text) returns text[] language sql as $$ select string_to_array($1,'/') $$;
     grant usage on schema public,auth,storage to authenticated,service_role;
     grant select on storage.objects to authenticated;
   `);
-  for (const filename of ['202609080001_household.sql','202609080002_push_queue.sql','202609080003_cloud_foundation.sql','202609080004_code_auth.sql']) {
+  for (const filename of ['202609080001_household.sql','202609080002_push_queue.sql','202609080003_cloud_foundation.sql','202609080004_code_auth.sql','202609080005_recipe_repository.sql']) {
     await pg.exec(readFileSync(resolve(process.cwd(),'../supabase/migrations',filename),'utf8'));
   }
 }, 30000);
@@ -144,7 +144,7 @@ describe('cloud storage access boundary', () => {
     await owner();
     await pg.query("insert into public.cloud_photos(household_id,id,object_path,sha256,mime_type,byte_size) values($1,$2,$3,$4,'image/jpeg',10)",
       [home,photo,home+'/'+photo,'a'.repeat(64)]);
-    await pg.query("insert into storage.objects values($1,$2,'cloud-photos')",[photo,home+'/'+photo]);
+    await pg.query("insert into storage.objects(id,name,bucket_id) values($1,$2,'cloud-photos')",[photo,home+'/'+photo]);
     await asUser(h); expect((await pg.query('select * from storage.objects')).rows).toHaveLength(0);
     await owner(); await pg.query("update public.cloud_photos set state='ready' where id=$1",[photo]);
     await asUser(w,wid); expect((await pg.query('select * from storage.objects')).rows).toHaveLength(1);
@@ -260,5 +260,156 @@ describe('permanent code authentication support', () => {
       .toMatchObject({ householdId: home, role: 'husband', name: 'Our kitchen', accessVersion: 1 });
     await asUser(h,null);
     expect((await pg.query<{ value: unknown }>('select public.cloud_auth_context() as value')).rows[0]!.value).toBeNull();
+  });
+});
+
+function recipePayload(id: string, title = 'Kimchi stew') {
+  return {
+    id,
+    title,
+    servings: 2,
+    sourceUrl: null,
+    sourceText: null,
+    notes: '',
+    tags: ['dinner'],
+    steps: [{ text: 'Boil', durationSec: 600 }],
+    photoId: null as string | null,
+    ingredients: [{
+      ingredientId: null as string | null,
+      name: '다진 마늘',
+      category: 'vegetable',
+      defaultUnit: 'g',
+      isStaple: true,
+      qty: 10,
+      unit: 'g',
+      note: '',
+      optional: false,
+    }],
+  };
+}
+
+describe('recipe repository commands', () => {
+  it('lets either fixed role save and read the same strict snapshot', async () => {
+    const id = crypto.randomUUID();
+    const command = crypto.randomUUID();
+    await asUser(w,wid);
+    expect((await pg.query<{ value: { version: number } }>(
+      'select public.cloud_recipe_save($1,$2,$3) as value',
+      [command,null,JSON.stringify(recipePayload(id))],
+    )).rows[0]!.value.version).toBe(1);
+
+    await asUser(h,sid2);
+    const snapshot = (await pg.query<{ value: {
+      householdId: string;
+      recipes: Array<{ id: string; title: string; ingredients: Array<{ ingredientId: string }> }>;
+      ingredients: Array<{ id: string; name: string }>;
+    } }>('select public.cloud_recipe_snapshot() as value')).rows[0]!.value;
+    expect(snapshot.householdId).toBe(home);
+    expect(snapshot.recipes.find(value => value.id === id)).toMatchObject({
+      title: 'Kimchi stew',
+      ingredients: [{ ingredientId: snapshot.ingredients.find(value => value.name === '다진 마늘')!.id }],
+    });
+
+    const spaced = recipePayload(crypto.randomUUID(), 'Garlic rice');
+    spaced.ingredients[0]!.name = '다진마늘';
+    await pg.query('select public.cloud_recipe_save($1,$2,$3)',[
+      crypto.randomUUID(),null,JSON.stringify(spaced),
+    ]);
+    expect((await pg.query(
+      "select name from public.cloud_ingredients where name in ('다진 마늘','다진마늘')",
+    )).rows).toEqual([{name:'다진 마늘'}]);
+  });
+
+  it('rejects invalid payloads atomically and prevents cross-household references', async () => {
+    await asUser(h);
+    const before = (await pg.query<{ count: number }>(
+      'select count(*)::integer as count from public.cloud_ingredients',
+    )).rows[0]!.count;
+    const invalid = recipePayload(crypto.randomUUID());
+    invalid.ingredients.push({
+      ...invalid.ingredients[0]!,
+      ingredientId: crypto.randomUUID(),
+      name: 'Foreign',
+    });
+    await expect(pg.query('select public.cloud_recipe_save($1,$2,$3)',[
+      crypto.randomUUID(),null,JSON.stringify(invalid),
+    ])).rejects.toThrow('Ingredient not found');
+    expect((await pg.query<{ count: number }>(
+      'select count(*)::integer as count from public.cloud_ingredients',
+    )).rows[0]!.count).toBe(before);
+
+    const extra = { ...recipePayload(crypto.randomUUID()), unexpected: true };
+    await expect(pg.query('select public.cloud_recipe_save($1,$2,$3)',[
+      crypto.randomUUID(),null,JSON.stringify(extra),
+    ])).rejects.toThrow('Invalid recipe');
+  });
+
+  it('replays identical commands and rejects stale versions or changed command bodies', async () => {
+    const id = crypto.randomUUID();
+    const command = crypto.randomUUID();
+    await asUser(h);
+    const first = (await pg.query<{ value: unknown }>(
+      'select public.cloud_recipe_save($1,$2,$3) as value',
+      [command,null,JSON.stringify(recipePayload(id))],
+    )).rows[0]!.value;
+    const replay = (await pg.query<{ value: unknown }>(
+      'select public.cloud_recipe_save($1,$2,$3) as value',
+      [command,null,JSON.stringify(recipePayload(id))],
+    )).rows[0]!.value;
+    expect(replay).toEqual(first);
+    await expect(pg.query('select public.cloud_recipe_save($1,$2,$3)',[
+      command,null,JSON.stringify(recipePayload(id,'Changed')),
+    ])).rejects.toThrow('Command id reused');
+    await expect(pg.query('select public.cloud_recipe_save($1,$2,$3)',[
+      crypto.randomUUID(),99,JSON.stringify(recipePayload(id,'Changed')),
+    ])).rejects.toThrow('Recipe version conflict');
+  });
+
+  it('keeps pending photos hidden, verifies upload metadata, and soft-deletes recipes', async () => {
+    const photoId = crypto.randomUUID();
+    const bytes = 10;
+    await asUser(w,wid);
+    const begun = (await pg.query<{ value: { id: string; objectPath: string; uploadRequired: boolean } }>(
+      'select public.cloud_photo_begin($1,$2) as value',
+      [crypto.randomUUID(),JSON.stringify({
+        id: photoId, sha256: 'a'.repeat(64), mimeType: 'image/jpeg', byteSize: bytes,
+      })],
+    )).rows[0]!.value;
+    expect(begun).toEqual({id:photoId,objectPath:home+'/'+photoId,uploadRequired:true});
+    expect((await pg.query<{ value: { photos: unknown[] } }>(
+      'select public.cloud_recipe_snapshot() as value',
+    )).rows[0]!.value.photos).toHaveLength(0);
+
+    await asUser(other,oid);
+    await expect(pg.query(
+      "insert into storage.objects(id,name,bucket_id,metadata) values($1,$2,'cloud-photos',$3)",
+      [crypto.randomUUID(),begun.objectPath,JSON.stringify({size:bytes,mimetype:'image/jpeg'})],
+    )).rejects.toThrow();
+
+    await asUser(w,wid);
+    await pg.query(
+      "insert into storage.objects(id,name,bucket_id,metadata) values($1,$2,'cloud-photos',$3)",
+      [crypto.randomUUID(),begun.objectPath,JSON.stringify({size:bytes,mimetype:'image/jpeg'})],
+    );
+    await pg.query('select public.cloud_photo_finalize($1,$2)',[crypto.randomUUID(),photoId]);
+    expect((await pg.query<{ value: { photos: Array<{ id: string }> } }>(
+      'select public.cloud_recipe_snapshot() as value',
+    )).rows[0]!.value.photos).toMatchObject([{id:photoId}]);
+
+    const id = crypto.randomUUID();
+    const payload = recipePayload(id);
+    payload.photoId = photoId;
+    await pg.query('select public.cloud_recipe_save($1,$2,$3)',[
+      crypto.randomUUID(),null,JSON.stringify(payload),
+    ]);
+    await expect(pg.query('select public.cloud_recipe_delete($1,$2,$3)',[
+      crypto.randomUUID(),id,99,
+    ])).rejects.toThrow('Recipe version conflict');
+    await pg.query('select public.cloud_recipe_delete($1,$2,$3)',[
+      crypto.randomUUID(),id,1,
+    ]);
+    expect((await pg.query<{ value: { recipes: Array<{ id: string }> } }>(
+      'select public.cloud_recipe_snapshot() as value',
+    )).rows[0]!.value.recipes.some(value => value.id === id)).toBe(false);
   });
 });

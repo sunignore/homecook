@@ -104,7 +104,7 @@ export async function loginCloud(role: CloudRole, code: string, persist: boolean
   return acceptSession(await gateway({ action: 'login', role, code }), persist);
 }
 
-async function sessionClient(): Promise<SupabaseClient | null> {
+export async function cloudSessionClient(): Promise<SupabaseClient | null> {
   if (currentClient) {
     const active = await currentClient.auth.getSession();
     if (active.data.session) return currentClient;
@@ -119,7 +119,7 @@ async function sessionClient(): Promise<SupabaseClient | null> {
 }
 
 export async function cloudAuthContext(): Promise<CloudContext> {
-  const selected = await sessionClient();
+  const selected = await cloudSessionClient();
   if (!selected) throw new Error('로그인이 필요합니다.');
   const result = await selected.rpc('cloud_auth_context');
   const parsed = cloudContextSchema.safeParse(result.data);
@@ -128,7 +128,7 @@ export async function cloudAuthContext(): Promise<CloudContext> {
 }
 
 async function adminRequest(body: unknown): Promise<void> {
-  const selected = await sessionClient();
+  const selected = await cloudSessionClient();
   const session = await selected?.auth.getSession();
   const token = session?.data.session?.access_token;
   if (!token) throw new Error('관리자 로그인이 필요합니다.');

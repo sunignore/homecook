@@ -12,8 +12,8 @@ There is no existing user data to migrate. Device pairing tests are on hold.
 | Stage | Deliverable | State |
 | --- | --- | --- |
 | 1 | ADR, cloud tables, private photo boundary, session enrollment and revocation foundation | Merged in PR #13 |
-| 2 | Bootstrap, code gateway, credential management, accessible login UI | Implemented locally; PR review pending |
-| 3 | Recipes, ingredients and photos through server repositories | Pending |
+| 2 | Bootstrap, code gateway, credential management, accessible login UI | Merged in PR #14 |
+| 3 | Recipes, ingredients and photos through server repositories | Implemented locally; PR review pending |
 | 4 | Pantry, meal plans, shopping and cooking history | Pending |
 | 5 | Both-role order actions, frozen receipts, cooking handoff | Pending |
 | 6 | Realtime/refetch, personal caches, shared-device memory mode | Pending |
@@ -111,7 +111,11 @@ Migrations 001 and 002 were applied by the owner, with Vercel public configurati
 and anonymous Auth enabled for the legacy app. A trial household exists.
 Migration 003 is additive and creates no users or households. Do not confuse the
 legacy anonymous authentication switch with the future code gateway.
-The current browser app does not yet read cloud_* tables.
+Migration 005 adds strict recipe snapshots, versioned and idempotent recipe
+commands, and the pending-to-ready private photo upload protocol. The browser
+repository validates every request and response and verifies downloaded photo bytes.
+Existing screens do not use this repository yet; activating only some recipe
+consumers would split the app between local and cloud data.
 
 Before production cutover: deploy and test the complete gateway, validated commands,
 Storage authorization, client and push changes in a private environment. Keep all

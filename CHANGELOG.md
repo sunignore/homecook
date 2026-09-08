@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased] 2026-09-07
 
+### Added
+- **[2026-09-08]**: Added the validated Supabase repository boundary for recipes, canonical ingredients, and private photos: strict snapshots, idempotent version-checked save/delete commands, pending-to-ready upload verification, household-scoped Storage policies, and client-side SHA-256 download checks. Existing screens remain on the current store until the coordinated cloud cutover.
 ### Changed
 - **[2026-09-08]**: Added the staged permanent role-and-code authentication flow: one-time household bootstrap, server-keyed code derivation, rate-limited login, enrolled multi-device sessions, husband-only credential rotation and explicit role-wide revocation, plus an accessible account screen. Existing content still uses legacy storage until the repository stages land.
 - **[2026-09-08]**: Added the full-cloud storage foundation: permanent-member session gates, versioned household tables, private photo policies and database boundary tests. The existing client remains on legacy storage until the code-login and repository stages are implemented.

@@ -34,8 +34,10 @@ Never put the service-role key, private VAPID key, or worker secret in VITE vari
 This flow is implemented separately from legacy anonymous pairing and does not switch
 application data to the cloud by itself.
 
-1. Apply migrations 003 and 004 in timestamp order. Migration 004 is retry-safe for
-   the same partially provisioned Husband identity and refuses a second household.
+1. Apply migrations 003, 004, and 005 in timestamp order. Migration 004 is
+   retry-safe for the same partially provisioned Husband identity and refuses a
+   second household. Migration 005 adds recipe commands and private photo upload
+   policies, but does not switch the existing screens to cloud data.
 2. In Supabase Edge Function secrets, set HOMECOOK_AUTH_PEPPER to a stable random
    value of at least 32 characters, HOMECOOK_BOOTSTRAP_SECRET to a separate random
    value of at least 24 characters, and HOMECOOK_APP_ORIGINS to the exact allowed
@@ -131,7 +133,7 @@ bundle is therefore unchanged by household mode for the offline cooking path
 (design.md E6). The Supabase chunk is still precached so the installed app stays
 complete offline.
 
-Local verification on 2026-09-08: 273 tests across 19 files passed; TypeScript and
+Local verification on 2026-09-08: 281 tests across 20 files passed; TypeScript and
 the production PWA build passed; both the code-auth Edge Function and its strict
 request contracts passed Deno checking. Hosted authentication remains a deployment
 checkpoint because no production secret or migration was applied from this computer.
