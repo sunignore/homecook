@@ -3,10 +3,10 @@
 > Shared reference for all AI tools (Claude Code, Gemini CLI, Antigravity).
 > Tool-specific behaviors: CLAUDE.md (Claude Code), GEMINI.md (Gemini/Antigravity).
 > Variant-specific configuration (tech stack, agents, skills, scripts, workflow):
->   → docs/homecook.context.md
+>   → docs/co-develop.context.md
 >
 > ⚠️ This file is IMMUTABLE after project creation.
->    All project-specific changes belong in docs/homecook.context.md
+>    All project-specific changes belong in docs/co-develop.context.md
 
 ---
 
@@ -43,7 +43,7 @@ Standard directory layout for all projects in this workspace:
 ```
 <project-root>/
 ├── src/          # Source code
-├── docs/         # context.md (this file) + homecook.context.md + ADRs
+├── docs/         # context.md (this file) + co-develop.context.md + ADRs
 ├── scripts/      # Automation scripts (TypeScript, .ts via bun)
 ├── memory/       # Session logs (MEMORY.md index + daily logs)
 ├── agents/       # Role-based agent definitions
@@ -62,7 +62,7 @@ Standard directory layout for all projects in this workspace:
 | File | Purpose |
 |------|---------|
 | `docs/context.md` | This file — immutable project identity |
-| `docs/homecook.context.md` | Variant config — tech stack, agents, skills, scripts, workflow |
+| `docs/co-develop.context.md` | Variant config — tech stack, agents, skills, scripts, workflow |
 | `CLAUDE.md` | Claude Code session behavior and slash commands |
 | `GEMINI.md` | Gemini CLI / Antigravity session behavior |
 | `AGENTS.md` | Canonical agent index (auto-loaded by Claude Code) |
@@ -429,9 +429,9 @@ For full lifecycle procedures:
 
 ### Context Commonization Review
 
-This file (`docs/context.md`) and each variant's `docs/homecook.context.md` follow the same
+This file (`docs/context.md`) and its `docs/co-develop.context.md` customization layer follow the same
 one-directional inheritance rule ADR-0050 already established for scripts: `docs/context.md`
-(this file) is the SSOT for content genuinely shared by every variant; a `docs/homecook.context.md`
+(this file) is the SSOT for content genuinely shared by every variant; `docs/co-develop.context.md`
 may only add variant-specific content, never re-state what belongs here. As the number of variants
 grows, unrelated variants independently reaching for the same wording is expected — left unmanaged,
 that duplication compounds project-by-project instead of being fixed once at the source.
@@ -439,7 +439,7 @@ that duplication compounds project-by-project instead of being fixed once at the
 - **Trigger**: after scaffolding a new variant (`create-variant` skill), and at minimum every 5
   new variants or once per quarter (whichever comes first) since the last review.
 - **Detection**: `scripts/audit.ts`'s `checkVariantContextCommonization()` (mirrors `checkVariantScriptDrift()`)
-  flags `docs/homecook.context.md` sections with high textual overlap across multiple variants —
+  flags variant context sections with high textual overlap across multiple variants —
   WARN-only, a first-pass heuristic requiring human judgment, not an auto-fix.
 - **Decision** (architect-owned): content shared by nearly all variants → promote into this file via
   `scripts/promote-context-section.ts`, so the version-footer sync in `upgrade-project.ts` propagates

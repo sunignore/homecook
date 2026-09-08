@@ -1,12 +1,12 @@
 ---
 sync_version: 1
-content_hash: 065e029af43e32c599aac88550b5a92183ce11646eba881215fc8a8ba9e53cbd
+content_hash: afcdf11dade9d1d3dff74aad7d02a606dd729a5aaa5b6fc46007dd9e343f6182
 ---
 
 # homecook
 
 > **Language**: **English** · [한국어](README_ko.md)
-> **Status**: 🚧 M1 in progress
+> **Status**: M1–M4 implemented · real-use validation in progress
 > A personal home-cooking app — recipes, pantry, meal plan and a kitchen-friendly cook mode, running offline on your phone.
 
 ## What this is
@@ -25,10 +25,14 @@ Pantry ──▶ What should I cook? ──▶ Cook mode ──▶ Cook log
 
 | Milestone | Scope | Status |
 |-----------|-------|--------|
-| **M1** | Recipe archive, paste-to-parse import, cook log, backup | 🚧 In progress — import and backup done; cook log next |
-| **M2** | Cook mode — full-screen steps, timers, Wake Lock | ✅ Built |
-| **M3** | Pantry inventory and "what can I cook now" suggestions | Planned |
-| **M4** | Weekly meal plan → shopping list | Planned |
+| **M1** | Recipe archive, paste-to-parse import, cook log, backup | Implemented · usage goal pending |
+| **M2** | Cook mode — full-screen steps, timers, Wake Lock | Implemented · kitchen trial pending |
+| **M3** | Pantry inventory and "what can I cook now" suggestions | Implemented · dinner decision trial pending |
+| **M4** | Weekly meal plan → shopping list | Implemented · in-store trial pending |
+
+Implementation status and product validation are tracked separately. A milestone is
+only validated after it meets the real-use outcome in
+[`docs/product-brief.md`](docs/product-brief.md), even when its code is complete.
 
 Start with [`docs/product-brief.md`](docs/product-brief.md) for the problem and scope,
 [`docs/data-model.md`](docs/data-model.md) for the schema, and
@@ -157,4 +161,4 @@ This variant focuses on software development workflows, feature implementation, 
 
 ---
 
-*Last Updated: 2026-09-07*
+*Last Updated: 2026-09-08*

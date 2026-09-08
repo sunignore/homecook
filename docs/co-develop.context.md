@@ -1,11 +1,11 @@
-# homecook —co-develop Configuration
+# homecook — co-develop Configuration
 
 > Extends docs/context.md. This file IS the customization layer for this project.
-> context.md is IMMUTABLE —all project-specific changes belong here.
+> context.md is IMMUTABLE — all project-specific changes belong here.
 >
 > Read order for all AI tools:
->   1. docs/context.md              —immutable project identity (architecture, standards)
->   2. docs/co-develop.context.md   —THIS FILE —tech stack, agents, skills, workflow
+>   1. docs/context.md              — immutable project identity (architecture, standards)
+>   2. docs/co-develop.context.md   — THIS FILE — tech stack, agents, skills, workflow
 
 ---
 
@@ -13,12 +13,12 @@
 
 | Layer | Technology |
 |-------|-----------|
-| **Language** | [e.g., TypeScript 5+ / Python 3.11+] |
-| **Framework** | [e.g., Next.js / FastAPI / none] |
-| **Database** | [e.g., PostgreSQL + Prisma / SQLite / none] |
-| **Key Libraries** | [e.g., react-query, zod, httpx] |
-| **Package Manager** | [e.g., pnpm / npm / uv] |
-| **Testing** | [e.g., Vitest + Playwright / pytest] |
+| **Language** | TypeScript 5.7 |
+| **Framework** | React 18 + Vite 6; installable PWA |
+| **Database** | IndexedDB via Dexie 4; local-only, no backend |
+| **Key Libraries** | React Router, Dexie React Hooks, fflate, Lucide React |
+| **Package Manager** | Bun |
+| **Testing** | Vitest 3 + Testing Library + fake-indexeddb |
 
 ---
 
@@ -60,10 +60,12 @@
 
 ## Environment Setup
 
-- Copy `.env.sample` —`.env` and fill in all required values.
-- **Node.js**: `bun install`
-- **Python**: `python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`
-- Required env keys (see `.env.sample`): *(fill in after project creation)*
+- No environment variables are required for the app.
+- Install dependencies: `cd app && bun install`
+- Start development: `bun run dev`
+- Run tests: `bun run test`
+- Run the production build: `bun run build`
+- Vercel must use `app` as the project Root Directory; deployment settings live in `app/vercel.json`.
 
 ---
 
@@ -74,10 +76,10 @@ Edit code
   —
 /sync "feat: description"
   —
-  1. audit.ts —abort on failure
-  2. memory/YYYY-MM-DD.md —session log (4-section format)
+  1. audit.ts — abort on failure
+  2. memory/YYYY-MM-DD.md — session log (4-section format)
   3. MEMORY.md index update
-  4. git add -A —commit
+  4. git add -A — commit
   5. pr/<date>-<slug> branch created (if on main)
   6. git push + gh pr create
 ```
@@ -85,10 +87,10 @@ Edit code
 ### Agent Dispatch Order (co-develop standard)
 
 ```
-PM —Architect (design + ADR)
-   —Code Writer (implementation)
-   —Test Runner (QA gate)
-   —Security Monitor (review)
+PM — Architect (design + ADR)
+   — Code Writer (implementation)
+   — Test Runner (QA gate)
+   — Security Monitor (review)
 ```
 
 ### Workflow Phases
@@ -99,7 +101,7 @@ PM —Architect (design + ADR)
 | 1 | Triage | PM classifies request; dispatches read-only agents in parallel |
 | 2 | Analysis | PM synthesizes findings into requirements + acceptance criteria |
 | 3 | Design | Architect produces implementation plan + ADR |
-| 4 | Implementation | Code Writer —Test Runner —loop up to 3× on failures |
+| 4 | Implementation | Code Writer — Test Runner — loop up to 3× on failures |
 | 5 | Finalization | PM logs decisions; runs `/sync`; opens PR |
 
 ---
@@ -110,11 +112,11 @@ PM —Architect (design + ADR)
 
 ### Core Rules
 
-1. **Think before coding** —state assumptions; if uncertain, ask.
-2. **Simplicity first** —minimum code that solves the problem.
-3. **Surgical changes** —touch only what is necessary.
-4. **No hardcoded secrets** —always use env vars / `.env.sample`.
-5. **PR required** —all changes via `/sync`; never direct push to main.
+1. **Think before coding** — state assumptions; if uncertain, ask.
+2. **Simplicity first** — minimum code that solves the problem.
+3. **Surgical changes** — touch only what is necessary.
+4. **No hardcoded secrets** — always use env vars / `.env.sample`.
+5. **PR required** — all changes via `/sync`; never direct push to main.
 
 ### Plan Mode
 
@@ -177,7 +179,7 @@ Every specialist dispatch leaves one durable artifact on disk - never chat outpu
 
 ## Domain Rules
 
-<!-- co-develop variant specific rules —edit after project creation -->
+<!-- co-develop variant-specific rules — edit after project creation -->
 1. All implementation must have a corresponding test.
 2. Architecture changes require Architect agent ADR before implementation.
 3. Security Monitor must review before any PR targeting auth, secrets, or infra. **[DEVELOP-R1]**

@@ -1,7 +1,7 @@
 # Data Model — homecook
 
 ## Status
-Active — M1 schema is binding
+Active — schema v3 is shipped and binding
 
 ## Created
 2026-09-07
@@ -155,7 +155,7 @@ step. Rules:
 - Any bump that changes the shape of existing records **must** have an `upgrade`
   function and a unit test that runs it against a fixture database from the previous
   version.
-- Planned versions: `v1` = M1 tables, `v2` = `pantryItems` (M3),
+- Shipped versions: `v1` = M1 tables, `v2` = `pantryItems` (M3),
   `v3` = `mealPlans` + `shoppingItems` (M4).
 
 ## 4. Indexes
