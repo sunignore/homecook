@@ -55,9 +55,18 @@ export default function RecipeImport() {
           onSubmit={async (draft, photo) => {
             const id = await importRecipe({ ...draft, sourceText });
             // Attached after the recipe exists, so a failed image cannot lose
-            // the recipe the user just corrected.
-            if (photo) await replaceRecipePhoto(id, photo);
-            navigate(`/recipes/${id}`);
+            // the recipe the user just corrected — and the failure must not be
+            // reported as a failed save either, because pressing 저장 again
+            // would import the whole recipe a second time.
+            let photoFailed = false;
+            if (photo) {
+              try {
+                await replaceRecipePhoto(id, photo);
+              } catch {
+                photoFailed = true;
+              }
+            }
+            navigate(`/recipes/${id}`, { state: { photoFailed } });
           }}
         />
       </div>

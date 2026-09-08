@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
+import { photoBlob } from '../photos/photoBytes';
 
-// Photos are Blobs in IndexedDB (docs/data-model.md §2), so every render needs
-// an object URL — and every one of them has to be revoked, or a scroll through
-// the recipe list leaks a URL per card for the life of the session.
+// Photos are bytes in IndexedDB (docs/data-model.md §2), so every render needs
+// a Blob and an object URL — and every one of them has to be revoked, or a
+// scroll through the recipe list leaks a URL per card for the life of the
+// session.
 
 export default function RecipePhoto({
   photoId,
@@ -16,7 +18,7 @@ export default function RecipePhoto({
   className?: string;
 }) {
   const blob = useLiveQuery(
-    async () => (photoId ? ((await db.photos.get(photoId))?.blob ?? null) : null),
+    async () => (photoId ? photoBlob(await db.photos.get(photoId)) : null),
     [photoId],
   );
   const [url, setUrl] = useState<string | null>(null);

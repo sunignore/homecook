@@ -8,6 +8,7 @@
 import { unzipSync, zipSync } from 'fflate';
 import { db, HomecookDB } from '../db/db';
 import type { Photo } from '../db/types';
+import { photoPayload } from '../photos/photoBytes';
 import {
   BACKUP_FORMAT,
   BACKUP_VERSION,
@@ -49,9 +50,11 @@ export async function exportBackup(database: HomecookDB = db): Promise<Blob> {
   const photoEntries: PhotoEntry[] = [];
 
   for (const photo of photos) {
-    const type = photo.blob.type || 'application/octet-stream';
+    // Reads both row shapes, so a backup taken right after the upgrade still
+    // carries photos written as Blobs (src/photos/photoBytes.ts).
+    const { bytes, type } = await photoPayload(photo);
     const file = `${PHOTO_DIR}/${photo.id}.${photoExtension(type)}`;
-    files[file] = new Uint8Array(await photo.blob.arrayBuffer());
+    files[file] = bytes;
     photoEntries.push({ id: photo.id, createdAt: photo.createdAt, file, type });
   }
 
@@ -147,14 +150,16 @@ export async function restoreBackup(
   const { manifest, archive } = preview;
 
   const photos: Photo[] = manifest.photos.map(entry => {
-    // Copy into a plain ArrayBuffer-backed view: fflate hands back a
-    // Uint8Array over ArrayBufferLike, which BlobPart does not accept.
+    // Copied into a standalone ArrayBuffer: fflate hands back a Uint8Array that
+    // may be a view onto a larger shared buffer, and storing that would persist
+    // the whole archive behind every photo.
     const source = archive[entry.file]!;
     const bytes = new Uint8Array(source.byteLength);
     bytes.set(source);
     return {
       id: entry.id,
-      blob: new Blob([bytes], { type: entry.type }),
+      bytes: bytes.buffer,
+      type: entry.type,
       createdAt: entry.createdAt,
     };
   });

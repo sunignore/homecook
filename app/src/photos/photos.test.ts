@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { HomecookDB, saveRecipe } from '../db/db';
 import { fitWithin, MAX_EDGE } from './resizeImage';
 import { pruneOrphanPhotos, putPhoto, replaceRecipePhoto } from './photoStore';
+import { photoBlob } from './photoBytes';
 
 // preparePhoto itself needs a real canvas, so it is exercised in the browser.
 // What is unit-tested here is the sizing arithmetic and the storage bookkeeping —
@@ -64,8 +65,52 @@ beforeEach(async () => {
 describe('putPhoto', () => {
   it('stores the blob and returns its id', async () => {
     const id = await putPhoto(blob(1), db);
+    const stored = photoBlob(await db.photos.get(id));
+    expect(stored?.type).toBe('image/jpeg');
+  });
+
+  // Chromium writes an IDB Blob through a separate file-backed path that can
+  // fail on its own ("Error preparing Blob/File data to be stored in object
+  // store"), which made saving a recipe with a photo impossible while the rest
+  // of the database was healthy. Bytes take the ordinary clone path.
+  it('stores bytes rather than a Blob', async () => {
+    const id = await putPhoto(blob(1), db);
     const stored = await db.photos.get(id);
-    expect(stored?.blob.type).toBe('image/jpeg');
+
+    expect(stored && 'blob' in stored).toBe(false);
+    const bytes = stored && 'bytes' in stored ? stored.bytes : null;
+    // Realm-independent: fake-indexeddb clones through Node's structuredClone,
+    // whose ArrayBuffer is not jsdom's global one.
+    expect(Object.prototype.toString.call(bytes)).toBe('[object ArrayBuffer]');
+    expect(bytes!.byteLength).toBeGreaterThan(0);
+  });
+
+  it('round-trips the image content', async () => {
+    const id = await putPhoto(new Blob([new Uint8Array([1, 2, 3, 4])], { type: 'image/jpeg' }), db);
+
+    const back = photoBlob(await db.photos.get(id));
+    expect(new Uint8Array(await back!.arrayBuffer())).toEqual(new Uint8Array([1, 2, 3, 4]));
+  });
+});
+
+describe('photoBlob', () => {
+  it('reads a row written before photos moved to bytes', async () => {
+    // Migrating these on upgrade() would risk leaving the database unopenable,
+    // and with no server copy (ADR-0001) that is unrecoverable — so old rows
+    // are read in place instead.
+    await db.photos.add({
+      id: 'legacy',
+      blob: new Blob([new Uint8Array([9, 9])], { type: 'image/png' }),
+      createdAt: Date.now(),
+    });
+
+    const back = photoBlob(await db.photos.get('legacy'));
+    expect(back?.type).toBe('image/png');
+    expect(new Uint8Array(await back!.arrayBuffer())).toEqual(new Uint8Array([9, 9]));
+  });
+
+  it('returns null for a photo id that no longer exists', () => {
+    expect(photoBlob(undefined)).toBeNull();
   });
 });
 

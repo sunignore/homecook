@@ -76,10 +76,26 @@ export interface Recipe {
 
 export interface Photo {
   id: string;
-  /** Resized to a 1280px long edge before storing (docs/data-model.md §1). */
+  /**
+   * JPEG bytes, resized to a 1280px long edge before storing
+   * (docs/data-model.md §1). Stored as an ArrayBuffer rather than a Blob —
+   * see src/photos/photoBytes.ts for why.
+   */
+  bytes: ArrayBuffer;
+  /** MIME type of `bytes`, so a read can rebuild the Blob without guessing. */
+  type: string;
+  createdAt: number;
+}
+
+/** Row shape written before photos moved to ArrayBuffer. Read-only. */
+export interface LegacyPhoto {
+  id: string;
   blob: Blob;
   createdAt: number;
 }
+
+/** What the photos table may actually contain. Writes always use `Photo`. */
+export type StoredPhoto = Photo | LegacyPhoto;
 
 export type Rating = 1 | 2 | 3 | 4 | 5;
 
