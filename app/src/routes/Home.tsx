@@ -8,6 +8,7 @@ import { oneIngredientAway, suggestRecipes } from '../pantry/suggestions';
 import { todayLocalDateString } from '../plan/date';
 import type { MealSlot } from '../db/types';
 import './Home.css';
+import { useHousehold } from '../household/useHousehold';
 
 const SLOT_LABELS: Record<MealSlot, string> = {
   breakfast: '아침',
@@ -20,6 +21,7 @@ const SLOTS: MealSlot[] = ['breakfast', 'lunch', 'dinner'];
 // I cook now", the "one ingredient away" list, what's expiring soon, and
 // today's plan once M4 has one to show.
 export default function Home() {
+  const { snapshot } = useHousehold();
   const recipes = useLiveQuery(() => db.recipes.toArray(), [], []);
   const ingredients = useLiveQuery(() => db.ingredients.toArray(), [], []);
   const pantryItems = useLiveQuery(() => db.pantryItems.toArray(), [], []);
@@ -50,6 +52,8 @@ export default function Home() {
   return (
     <div className="stack">
       <h1>오늘 뭐 먹지</h1>
+      <Link to="/restaurant" className="card">우리집 식당 · 메뉴판과 주문함 →</Link>
+      {snapshot && <p>{snapshot.name} · 접수 대기 {snapshot.orders.filter(o => o.status === 'pending').length}건</p>}
 
       {!hasRecipes ? (
         <div className="card stack empty">
@@ -145,7 +149,7 @@ export default function Home() {
                   {recipe ? (
                     <Link to={`/recipes/${recipe.id}`}>{recipe.title}</Link>
                   ) : (
-                    <span>{entry.freeText || '—'}</span>
+                    <span>{entry.dishes?.map(d => d.title).join(' · ') || entry.freeText || '—'}</span>
                   )}
                 </li>
               );

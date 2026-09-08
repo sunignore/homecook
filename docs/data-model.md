@@ -1,13 +1,31 @@
 # Data Model — homecook
 
 ## Status
-Active — schema v3 is shipped and binding
+Active — schema v3 is shipped; additive v4 household support is implemented locally
 
 ## Created
 2026-09-07
 
-All persistence is local IndexedDB via Dexie (see [ADR-0001](adr/0001-local-first-no-backend.md)).
-There is no server-side schema.
+Local persistence uses IndexedDB via Dexie. Household mode adds a Postgres schema
+in `supabase/migrations/`; see [ADR-0003](adr/0003-household-sharing.md).
+The entities below describe the original local model.
+
+Schema v4 adds `householdCache`, `householdOriginals`, `householdPhotos`, and
+`householdRecovery` without rewriting existing rows. MealPlan gains optional
+`householdId`, `sourceOrderId`, `dishes` and `diners` fields. Existing single-recipe
+plans retain their quantity semantics. Shared plans contain frozen dish snapshots.
+
+The server owns household membership, invitations, menu publications, orders,
+shared plans and notification delivery records. Shared state mutations use
+transaction functions; the browser cannot directly accept an order or change its
+role. See the [household ordering plan](household-ordering-plan.md) for the full
+ownership and state-transition contract.
+
+Backups include optional household snapshots, private photo bytes and preserved
+original plans, but no authentication or push credentials. Restored household
+history goes into the recovery table, and restored plans become local records;
+restoration does not mutate the live server. The restaurant screen exposes archive
+history and an explicit action to copy restored menus into the local recipe archive.
 
 ## 1. Design rules
 

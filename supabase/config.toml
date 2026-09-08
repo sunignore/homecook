@@ -1,0 +1,4 @@
+project_id = "homecook"
+
+[functions.push-orders]
+verify_jwt = false

@@ -59,7 +59,7 @@ function isSession(value: unknown): value is CookSession {
  */
 export function loadSession(recipeId: string, now = Date.now()): CookSession | null {
   try {
-    const raw = localStorage.getItem(KEY);
+    const raw = localStorage.getItem(KEY + ':' + recipeId) ?? localStorage.getItem(KEY);
     if (!raw) return null;
 
     const parsed: unknown = JSON.parse(raw);
@@ -75,16 +75,22 @@ export function loadSession(recipeId: string, now = Date.now()): CookSession | n
 
 export function saveSession(session: CookSession, now = Date.now()): void {
   try {
-    localStorage.setItem(KEY, JSON.stringify({ ...session, updatedAt: now }));
+    localStorage.setItem(KEY + ':' + session.recipeId, JSON.stringify({ ...session, updatedAt: now }));
   } catch {
     // Private mode or blocked storage — cooking still works, it just will not
     // survive a reload.
   }
 }
 
-export function clearSession(): void {
+export function clearSession(recipeId?: string): void {
   try {
-    localStorage.removeItem(KEY);
+    if (recipeId) {
+      localStorage.removeItem(KEY + ':' + recipeId);
+      const legacy = localStorage.getItem(KEY);
+      if (legacy && (JSON.parse(legacy) as CookSession).recipeId === recipeId) localStorage.removeItem(KEY);
+    } else {
+      Object.keys(localStorage).filter(key => key === KEY || key.startsWith(KEY + ':')).forEach(key => localStorage.removeItem(key));
+    }
   } catch {
     // Nothing to do; the stale entry expires on its own.
   }

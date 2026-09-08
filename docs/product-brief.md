@@ -3,6 +3,13 @@
 ## Status
 Active — M1–M4 implemented; real-use validation in progress
 
+Household extension: private ordering for two iPhones is implemented locally.
+See the [household ordering plan](household-ordering-plan.md) and
+[deployment runbook](household-deployment.md) for shared menus, orders, meal
+confirmation and notifications. Hosted deployment and physical device verification
+remain pending. The single-user/no-server statements below describe the M1-M4
+baseline and local-only mode.
+
 ## Created
 2026-09-07
 

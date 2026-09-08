@@ -1,0 +1,14 @@
+.restaurant-row, .restaurant-menu, .restaurant-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--hc-space-3);
+  flex-wrap: wrap;
+}
+.restaurant-row { justify-content: space-between; }
+.restaurant-menu { padding: var(--hc-space-3); border: 1px solid var(--card-border); border-radius: var(--hc-radius-md); }
+.restaurant-menu input { min-width: var(--hc-target-min); min-height: var(--hc-target-min); }
+.restaurant-photo { width: calc(var(--hc-target-min) * 2); height: calc(var(--hc-target-min) * 2); object-fit: cover; border-radius: var(--hc-radius-md); }
+.restaurant-receipt { border-style: dashed; scroll-margin-top: var(--hc-space-6); }
+.restaurant summary { cursor: pointer; padding-block: var(--hc-space-3); }
+.restaurant small { display: block; }
+.restaurant li { margin-block: var(--hc-space-2); }

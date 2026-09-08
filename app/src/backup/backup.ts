@@ -9,6 +9,8 @@ import { unzipSync, zipSync } from 'fflate';
 import { db, HomecookDB } from '../db/db';
 import type { Photo } from '../db/types';
 import { photoPayload } from '../photos/photoBytes';
+import { snapshotSchema } from '../household/contracts';
+import { server } from '../household/client';
 import {
   BACKUP_FORMAT,
   BACKUP_VERSION,
@@ -47,6 +49,26 @@ export async function exportBackup(database: HomecookDB = db): Promise<Blob> {
   ]);
 
   const files: Record<string, Uint8Array> = {};
+  const households = (await database.householdCache.toArray()).map(row => snapshotSchema.parse(row.snapshot));
+  for (const row of await database.householdRecovery.toArray()) {
+    const recovered = snapshotSchema.parse(row.snapshot);
+    if (!households.some(h => h.householdId === recovered.householdId)) households.push(recovered);
+  }
+  const householdPhotos: NonNullable<BackupManifest['householdPhotos']> = [];
+  const paths = [...new Set(households.flatMap(s => [...s.menu.map(m => m.recipe), ...s.orders.flatMap(o => o.items), ...s.plans.flatMap(p => p.items)]).flatMap(d => d.photoPath ? [d.photoPath] : []))];
+  for (const path of paths) {
+    let photo = await database.householdPhotos.get(path);
+    if (!photo && database === db) {
+      const result = await server().storage.from('household-photos').download(path);
+      if (result.error) throw new BackupFormatError('공유 사진을 백업하지 못했습니다. 인터넷 연결 후 다시 시도해주세요.');
+      photo = { id: path, bytes: await result.data.arrayBuffer(), type: result.data.type };
+      await database.householdPhotos.put(photo);
+    }
+    if (!photo) throw new BackupFormatError('공유 사진이 누락되었습니다.');
+    const file = 'household-photos/' + path.replace(/[^a-f0-9]/g, '');
+    files[file] = new Uint8Array(photo.bytes);
+    householdPhotos.push({ path, file, type: photo.type });
+  }
   const photoEntries: PhotoEntry[] = [];
 
   for (const photo of photos) {
@@ -59,6 +81,7 @@ export async function exportBackup(database: HomecookDB = db): Promise<Blob> {
   }
 
   const manifest: BackupManifest = {
+    households, householdPhotos, originalPlans: (await database.householdOriginals.toArray()).map(row => row.plan),
     format: BACKUP_FORMAT,
     version: BACKUP_VERSION,
     schemaVersion: CURRENT_SCHEMA_VERSION,
@@ -126,6 +149,14 @@ export async function readBackup(file: Blob): Promise<RestorePreview> {
   }
 
   const manifest = validateManifest(parsed);
+  for (const photo of manifest.householdPhotos ?? []) {
+    if (!archive[photo.file]) throw new BackupFormatError('공유 사진이 누락된 백업입니다.');
+  }
+  const sharedPaths = new Set((manifest.householdPhotos ?? []).map(photo => photo.path));
+  for (const household of manifest.households ?? []) {
+    const dishes = [...household.menu.map(m => m.recipe), ...household.orders.flatMap(o => o.items), ...household.plans.flatMap(p => p.items)];
+    if (dishes.some(dish => dish.photoPath && !sharedPaths.has(dish.photoPath))) throw new BackupFormatError('공유 사진 참조가 누락된 백업입니다.');
+  }
 
   // Fail here rather than silently restoring recipes whose photos vanished.
   const missing = manifest.photos.filter(p => !archive[p.file]);
@@ -174,6 +205,9 @@ export async function restoreBackup(
       database.pantryItems,
       database.mealPlans,
       database.shoppingItems,
+      database.householdRecovery,
+      database.householdPhotos,
+      database.householdOriginals,
     ],
     async () => {
       await Promise.all([
@@ -191,8 +225,20 @@ export async function restoreBackup(
       await database.cookLogs.bulkAdd(manifest.cookLogs);
       if (photos.length > 0) await database.photos.bulkAdd(photos);
       if (manifest.pantryItems.length > 0) await database.pantryItems.bulkAdd(manifest.pantryItems);
-      if (manifest.mealPlans.length > 0) await database.mealPlans.bulkAdd(manifest.mealPlans);
+      if (manifest.mealPlans.length > 0) await database.mealPlans.bulkAdd(manifest.mealPlans.map(plan => {
+        if (!plan.householdId) return plan;
+        // Archive restoration creates a local recovery plan, never a live order.
+        const { householdId: _household, sourceOrderId: _order, ...local } = plan;
+        return { ...local, id: crypto.randomUUID() };
+      }));
       if (manifest.shoppingItems.length > 0) await database.shoppingItems.bulkAdd(manifest.shoppingItems);
+      for (const snapshot of manifest.households ?? []) await database.householdRecovery.put({ id: snapshot.householdId, snapshot });
+      for (const entry of manifest.householdPhotos ?? []) {
+        const source = archive[entry.file]!;
+        const bytes = new Uint8Array(source.length); bytes.set(source);
+        await database.householdPhotos.put({ id: entry.path, bytes: bytes.buffer, type: entry.type });
+      }
+      for (const plan of manifest.originalPlans ?? []) await database.householdOriginals.put({ id: plan.id, plan });
     },
   );
 
